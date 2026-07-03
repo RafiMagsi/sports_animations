@@ -1006,10 +1006,13 @@
     const root = document.querySelector(rootSelector);
     if (!root) return;
 
-    const track = root.querySelector(rootSelector.indexOf("quote") !== -1 ? ".quote-carousel__track" : ".flags-carousel__track");
-    const viewport = root.querySelector(rootSelector.indexOf("quote") !== -1 ? ".quote-carousel__viewport" : ".flags-carousel__viewport");
+    const isQuote = rootSelector.indexOf("quote") !== -1;
+    const wrap = root.querySelector(isQuote ? ".quote-carousel__wrap" : ".flags-carousel__wrap");
+    const header = root.querySelector(isQuote ? ".quote-carousel__header" : ".flags-carousel__header");
+    const track = root.querySelector(isQuote ? ".quote-carousel__track" : ".flags-carousel__track");
+    const viewport = root.querySelector(isQuote ? ".quote-carousel__viewport" : ".flags-carousel__viewport");
     const cards = Array.from(root.querySelectorAll(itemSelector));
-    if (!track || !cards.length || !viewport) return;
+    if (!track || !cards.length || !viewport || !wrap) return;
 
     cards.forEach((card) => {
       gsap.set(card, {
@@ -1087,10 +1090,22 @@
 
     const triggerRef = ScrollTrigger.create({
       trigger: root,
-      start: "top bottom",
-      end: "bottom top",
+      start: "top top",
+      end: "+=140%",
+      pin: wrap,
+      anticipatePin: 1,
       scrub: true,
-      onUpdate: (self) => renderByProgress(self.progress)
+      onUpdate: (self) => {
+        renderByProgress(self.progress);
+        if (header) {
+          gsap.set(header, {
+            xPercent: 16 - self.progress * 34,
+            y: 0,
+            opacity: 0.42 + self.progress * 0.58,
+            filter: "blur(" + ((1 - self.progress) * 8).toFixed(2) + "px)"
+          });
+        }
+      }
     });
 
     renderByProgress(0);
@@ -1130,37 +1145,6 @@
       rotateX: 0,
       cardRotateZ: 3.5,
       maxBlur: 4.2
-    });
-  });
-
-  safeRun("carouselHeaders", function () {
-    [
-      { root: ".quote-carousel", header: ".quote-carousel__header" },
-      { root: ".flags-carousel", header: ".flags-carousel__header" }
-    ].forEach((item) => {
-      const root = document.querySelector(item.root);
-      const header = document.querySelector(item.header);
-      if (!root || !header) return;
-
-      gsap.set(header, { xPercent: 16, y: 0, opacity: 0.42, filter: "blur(8px)" });
-      if (reduceMotion) {
-        gsap.set(header, { xPercent: 0, opacity: 1, filter: "none" });
-        return;
-      }
-
-      gsap.to(header, {
-        xPercent: -18,
-        y: 0,
-        opacity: 1,
-        filter: "blur(0px)",
-        ease: "none",
-        scrollTrigger: {
-          trigger: root,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: true
-        }
-      });
     });
   });
 

@@ -1238,7 +1238,7 @@ body.cursor-hover .cursor-ring{
 }
 .quote-carousel__title,
 .flags-carousel__title{
-  font-size: clamp(48px, 8.8vw, 128px);
+  font-size: clamp(48px, 8.8vw, 88px);
   margin-top: 18px;
 }
 .quote-carousel__viewport,
