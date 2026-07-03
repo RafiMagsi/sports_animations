@@ -351,6 +351,9 @@
       return; // no WebGL — leave the section's CSS background as-is
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isSmall ? 1.5 : 2));
+    if ("outputColorSpace" in renderer && THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.12;
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(58, 1, 0.1, 500);
@@ -368,7 +371,9 @@
       const tctx = c.getContext("2d");
       const g = tctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
       g.addColorStop(0, "rgba(255,255,255,1)");
-      g.addColorStop(0.4, "rgba(255,255,255,0.6)");
+      g.addColorStop(0.18, "rgba(232,244,255,0.96)");
+      g.addColorStop(0.42, "rgba(184,214,255,0.52)");
+      g.addColorStop(0.72, "rgba(88,132,255,0.08)");
       g.addColorStop(1, "rgba(255,255,255,0)");
       tctx.fillStyle = g;
       tctx.fillRect(0, 0, s, s);
@@ -426,14 +431,14 @@
     geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
     const material = new THREE.PointsMaterial({
-      size: isSmall ? 0.55 : 0.7,
+      size: isSmall ? 0.42 : 0.56,
       map: glowTex,
       vertexColors: true,
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
       sizeAttenuation: true,
-      opacity: 0.9,
+      opacity: 0.72,
     });
 
     points = new THREE.Points(geometry, material);
@@ -442,7 +447,7 @@
     // -- glowing core sprite, blooms in once mostly gathered --
     const coreMat = new THREE.SpriteMaterial({
       map: glowTex,
-      color: 0x22d3ee,
+      color: 0xb8f2ff,
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
@@ -456,6 +461,18 @@
     let idleRotation = 0;
     let lastTime = null;
     const posAttr = geometry.attributes.position;
+    const hover = { active: false, x: 0, y: 0, radius: isSmall ? 64 : 92 };
+    const hoverVec = new THREE.Vector3();
+
+    section.addEventListener("mousemove", (event) => {
+      const rect = canvas.getBoundingClientRect();
+      hover.x = event.clientX - rect.left;
+      hover.y = event.clientY - rect.top;
+      hover.active = hover.x >= 0 && hover.y >= 0 && hover.x <= rect.width && hover.y <= rect.height;
+    });
+    section.addEventListener("mouseleave", () => {
+      hover.active = false;
+    });
 
     function resize() {
       const rect = canvas.parentElement.getBoundingClientRect();
@@ -472,19 +489,38 @@
 
       idleRotation += dt * 0.22; // faster idle spin
       group.rotation.y = idleRotation;
+      group.rotation.x = Math.sin(time * 0.00018) * 0.05;
+      group.updateMatrixWorld();
 
       const eased = easeOutCubic(gatherProgress);
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const ix = i * 3;
-        posAttr.array[ix] = starts[ix] + (targets[ix] - starts[ix]) * eased;
-        posAttr.array[ix + 1] = starts[ix + 1] + (targets[ix + 1] - starts[ix + 1]) * eased;
-        posAttr.array[ix + 2] = starts[ix + 2] + (targets[ix + 2] - starts[ix + 2]) * eased;
+        const px = starts[ix] + (targets[ix] - starts[ix]) * eased;
+        let py = starts[ix + 1] + (targets[ix + 1] - starts[ix + 1]) * eased;
+        const pz = starts[ix + 2] + (targets[ix + 2] - starts[ix + 2]) * eased;
+
+        if (hover.active) {
+          hoverVec.set(px, py, pz).applyMatrix4(group.matrixWorld).project(camera);
+          const sx = (hoverVec.x * 0.5 + 0.5) * canvas.clientWidth;
+          const sy = (-hoverVec.y * 0.5 + 0.5) * canvas.clientHeight;
+          const dx = sx - hover.x;
+          const dy = sy - hover.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < hover.radius) {
+            const influence = 1 - dist / hover.radius;
+            py += influence * influence * 3.2;
+          }
+        }
+
+        posAttr.array[ix] = px;
+        posAttr.array[ix + 1] = py;
+        posAttr.array[ix + 2] = pz;
       }
       posAttr.needsUpdate = true;
-      material.opacity = 0.35 + gatherProgress * 0.55;
+      material.opacity = 0.28 + gatherProgress * 0.44;
 
-      coreMat.opacity = clamp01((gatherProgress - 0.35) / 0.4) * 0.85;
-      const coreScale = 3 + gatherProgress * 5;
+      coreMat.opacity = clamp01((gatherProgress - 0.35) / 0.4) * 0.7;
+      const coreScale = 2.6 + gatherProgress * 4.1;
       core.scale.set(coreScale, coreScale, 1);
 
       camera.position.z = CAM_FAR_Z + (CAM_NEAR_Z - CAM_FAR_Z) * eased;
@@ -831,8 +867,21 @@
     let colorProgress = 0;
     let formProgress = 0; // 0 = galaxy shape, 1 = football shape
     let disappearProgress = 0; // 0 = fully visible, 1 = fully dispersed/faded
+    let scrollPhase = reduceMotion ? 1 : 0;
     let idleRotation = 0;
     let lastTime = null;
+    const hover = { active: false, x: 0, y: 0, radius: isSmall ? 54 : 82 };
+    const hoverVec = new THREE.Vector3();
+
+    section.addEventListener("mousemove", (event) => {
+      const rect = canvas.getBoundingClientRect();
+      hover.x = event.clientX - rect.left;
+      hover.y = event.clientY - rect.top;
+      hover.active = hover.x >= 0 && hover.y >= 0 && hover.x <= rect.width && hover.y <= rect.height;
+    });
+    section.addEventListener("mouseleave", () => {
+      hover.active = false;
+    });
 
     function resize() {
       const rect = canvas.parentElement.getBoundingClientRect();
@@ -851,11 +900,13 @@
       // regardless of scroll position, gathered or not
       idleRotation += dt * 0.26; // faster idle spin — covers both the galaxy and football-shape phases
       group.rotation.y = idleRotation;
+      group.updateMatrixWorld();
 
       const gatherEased = easeOutCubic(gatherProgress);
       const formEased = easeOutCubic(formProgress);
+      const glitterPulse = easeOutCubic(Math.max(0, 1 - Math.abs(scrollPhase - 0.24) / 0.08));
       const explode = 1 + disappearProgress * 1.6;
-      const baseOpacity = (0.35 + gatherProgress * 0.55) * (1 - disappearProgress);
+      const baseOpacity = (0.38 + gatherProgress * 0.55 + glitterPulse * 0.18) * (1 - disappearProgress);
 
       for (let t = 0; t < tierPoints.length; t++) {
         const td = tierData[t];
@@ -873,9 +924,26 @@
           const fy = gy + (td.ballTargets[ix + 1] - gy) * formEased;
           const fz = gz + (td.ballTargets[ix + 2] - gz) * formEased;
           // phase 3: disperse outward as it fades
-          posArr[ix] = fx * explode;
-          posArr[ix + 1] = fy * explode;
-          posArr[ix + 2] = fz * explode;
+          let finalX = fx * explode;
+          let finalY = fy * explode;
+          const finalZ = fz * explode;
+
+          if (hover.active) {
+            hoverVec.set(finalX, finalY, finalZ).applyMatrix4(group.matrixWorld).project(camera);
+            const sx = (hoverVec.x * 0.5 + 0.5) * canvas.clientWidth;
+            const sy = (-hoverVec.y * 0.5 + 0.5) * canvas.clientHeight;
+            const dx = sx - hover.x;
+            const dy = sy - hover.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < hover.radius) {
+              const influence = 1 - dist / hover.radius;
+              finalY += influence * influence * 2.4;
+            }
+          }
+
+          posArr[ix] = finalX;
+          posArr[ix + 1] = finalY;
+          posArr[ix + 2] = finalZ;
 
           colArr[ix] = td.colorA[ix] + (td.colorB[ix] - td.colorA[ix]) * colorProgress;
           colArr[ix + 1] = td.colorA[ix + 1] + (td.colorB[ix + 1] - td.colorA[ix + 1]) * colorProgress;
@@ -884,11 +952,15 @@
         tp.posAttr.needsUpdate = true;
         tp.colorAttr.needsUpdate = true;
         tp.material.opacity = baseOpacity;
+        tp.material.size = TIERS[t].size * (1 + glitterPulse * 0.4);
       }
 
-      coreMat.opacity = clamp01((gatherProgress - 0.35) / 0.4) * 0.8 * (1 - disappearProgress);
-      coreMat.color.setRGB(1, 0.93, 0.68).lerp(new THREE.Color(0x8b5cf6), colorProgress); // golden-white base, shifts to brand violet later
-      const coreScale = (2.6 + gatherProgress * 4.2) * (formEased > 0 ? 1 - formEased * 0.5 : 1);
+      coreMat.opacity = clamp01((gatherProgress - 0.35) / 0.4) * (0.8 + glitterPulse * 0.2) * (1 - disappearProgress);
+      coreMat.color
+        .setRGB(1, 0.93, 0.68)
+        .lerp(new THREE.Color(0x8b5cf6), colorProgress)
+        .lerp(new THREE.Color(0x22d3ee), glitterPulse * 0.2); // golden-white base, shifts to brand violet later
+      const coreScale = (2.6 + gatherProgress * 4.2 + glitterPulse * 1.3) * (formEased > 0 ? 1 - formEased * 0.5 : 1);
       core.scale.set(coreScale, coreScale, 1);
 
       // distance dollies in as the gather completes, but Y and Z move
@@ -920,6 +992,7 @@
         scrub: 1,
         onUpdate: (self) => {
           const p = self.progress;
+          scrollPhase = p;
           gatherProgress = clamp01(p / GATHER_END);
           colorProgress = clamp01((p - COLOR_START) / (COLOR_END - COLOR_START));
           formProgress = clamp01((p - FORM_START) / (FORM_END - FORM_START));
@@ -1214,6 +1287,13 @@
     });
   }
 
+  /* ---------------------------------------------------------
+     3b. HOVER GLITTERS — lightweight 2D sparkle overlay for the
+     intro football particles and the galaxy section. Glitters only
+     spawn within a small cursor radius, rise upward, and fade out.
+     This gives the "cursor lifts nearby glitters" effect without
+     destabilizing the heavier WebGL particle scenes underneath.
+     --------------------------------------------------------- */
   /* ---------------------------------------------------------
      4. SOUND — procedurally synthesized via Web Audio, no audio
      files (same download restriction as video/images, and honestly

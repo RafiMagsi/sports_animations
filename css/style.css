@@ -18,29 +18,30 @@
    ========================================================= */
 
 :root{
-  --holo-1: #22d3ee; /* cyan */
-  --holo-2: #8b5cf6; /* violet */
-  --holo-3: #f472b6; /* pink */
-  --holo-4: #b6ff3a; /* lime, used sparingly / inside gradients */
-  --holo-gradient: linear-gradient(115deg, var(--holo-1) 0%, var(--holo-2) 42%, var(--holo-3) 72%, var(--holo-1) 100%);
+  --holo-1: #9aefff; /* bright cyan */
+  --holo-2: #b79dff; /* bright violet */
+  --holo-3: #ff9fe2; /* bright pink */
+  --holo-4: #e7ff95; /* stadium-light lime */
+  --holo-gradient: linear-gradient(115deg, var(--holo-1) 0%, #f4fdff 14%, #def8ff 22%, var(--holo-2) 46%, var(--holo-3) 74%, var(--holo-4) 100%);
+  --float-holo-gradient: linear-gradient(115deg, #ffffff 0%, #ffffff 12%, #f7feff 24%, #ebfbff 36%, #d7f4ff 52%, #dccfff 72%, #ffd0ef 88%, #fff3bd 100%);
   /* colorful blurred "fog" used behind headline/body text blocks — the
      dark base layer here is intentionally LOW: this is a colorful glow
      patch, not a dark shadow plate. Too much dark base under bright
      gradient text just reads as "dimming the text", which is the exact
      complaint this is fixing — the color blooms alone (helped by the
      blur) already give enough contrast against busy video footage. */
-  --text-fog: radial-gradient(62% 62% at 26% 22%, rgba(34,211,238,0.42), transparent 68%),
-              radial-gradient(58% 58% at 78% 62%, rgba(139,92,246,0.44), transparent 68%),
-              radial-gradient(50% 50% at 42% 88%, rgba(244,114,182,0.36), transparent 70%),
-              rgba(4,5,10,0.16);
+  --text-fog: radial-gradient(62% 62% at 26% 22%, rgba(52,214,255,0.44), transparent 68%),
+              radial-gradient(58% 58% at 78% 62%, rgba(143,111,255,0.44), transparent 68%),
+              radial-gradient(50% 50% at 42% 88%, rgba(255,121,205,0.34), transparent 70%),
+              rgba(2,4,10,0.58);
   /* a bigger/bolder version (larger blooms, still a light dark base)
      for the page-wide floating words/phrases and hero flash lines,
      which need to read as an unmistakable colorful cloud, not a dim
      patch, over both busy video and pure black intro/galaxy scenes */
-  --text-fog-strong: radial-gradient(65% 65% at 24% 20%, rgba(34,211,238,0.58), transparent 70%),
-              radial-gradient(60% 60% at 80% 60%, rgba(139,92,246,0.6), transparent 70%),
-              radial-gradient(52% 52% at 40% 90%, rgba(244,114,182,0.5), transparent 72%),
-              rgba(4,5,10,0.2);
+  --text-fog-strong: radial-gradient(65% 65% at 24% 20%, rgba(52,214,255,0.56), transparent 70%),
+              radial-gradient(60% 60% at 80% 60%, rgba(143,111,255,0.6), transparent 70%),
+              radial-gradient(52% 52% at 40% 90%, rgba(255,121,205,0.48), transparent 72%),
+              rgba(2,4,10,0.72);
 
   /* text lives on video now, not on a flat page background — light
      ink + shadow reads regardless of what's playing behind it */
@@ -61,6 +62,7 @@
      face — as the fallback if Bebas Neue somehow fails to load */
   --font-display: 'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif;
   --font-mono: 'Oswald', 'Space Mono', monospace;
+  --gradient-stroke: rgba(233, 239, 255, 0.3);
 }
 
 *, *::before, *::after{ box-sizing: border-box; }
@@ -110,12 +112,13 @@ main{ position: relative; z-index: 1; }
 
 /* holo-gradient text — used for standout words inside headlines */
 .holo-text{
-  background: var(--holo-gradient);
+  background: var(--float-holo-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   text-shadow: none;
-  filter: drop-shadow(0 2px 16px rgba(0,0,0,0.45));
+  -webkit-text-stroke: 0.7px rgba(244,247,255,0.22);
+  filter: drop-shadow(0 2px 18px rgba(0,0,0,0.42));
 }
 
 .eyebrow{
@@ -195,6 +198,10 @@ body.cursor-hover .cursor-ring{
   pointer-events: none;
   overflow: hidden;
 }
+.floatphrase-layer{
+  position: absolute;
+  inset: 0;
+}
 .floatwords__smoke{
   position: absolute;
   inset: 0;
@@ -224,10 +231,15 @@ body.cursor-hover .cursor-ring{
      shadow on top of the text" rather than a clean background behind
      it, which is exactly the effect we want to avoid). */
   background: var(--holo-gradient);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 2px 10px rgba(0,0,0,0.6));
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+  filter: none;
 }
 /* sized big per feedback, but capped so even a long word (Discipline,
    Performance) at a corner position can't push past the viewport edge
@@ -250,20 +262,24 @@ body.cursor-hover .cursor-ring{
     scoped locally behind this phrase's own text */
   left: 50%;
   transform: translate(-50%, -50%);
-  max-width: min(640px, 82vw);
+  max-width: min(20ch, 32vw);
   text-align: center;
   font-family: var(--font-display);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
-  font-size: clamp(34px, 6.8vw, 104px);
-  line-height: 1.25;
+  letter-spacing: 0.035em;
+  font-size: clamp(22px, 3.2vw, 48px);
+  line-height: 1;
   opacity: 0;
   margin: 0;
-  padding: 0.3em 0.6em;
-  background: var(--holo-gradient);
+  padding: 0.16em 0.24em;
+  background: var(--float-holo-gradient);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0;
   /* FOUND THE REAL BUG: .floatphrase is a <p>, and the global reset rule
      `h1,h2,h3,p{ text-shadow: var(--text-shadow); }` was still applying
      to it. That shadow is a hardcoded black rgba (not derived from the
@@ -273,23 +289,61 @@ body.cursor-hover .cursor-ring{
      done elsewhere. Every other gradient-filled element on the site
      already had this override; this one was missed. */
   text-shadow: none;
-  filter: drop-shadow(0 2px 10px rgba(0,0,0,0.6));
+  filter: none;
 }
 .floatphrase::before{
   content:'';
   position: absolute;
-  inset: -0.6em -0.9em;
+  inset: -0.85em -1.2em;
   z-index: -1;
-  border-radius: 32px;
-  background: var(--text-fog-strong);
-  filter: blur(30px);
-  backdrop-filter: blur(20px) brightness(0.85);
-  -webkit-backdrop-filter: blur(20px) brightness(0.85);
-  -webkit-mask-image: radial-gradient(closest-side, black 62%, transparent 98%);
-  mask-image: radial-gradient(closest-side, black 62%, transparent 98%);
+  border-radius: 999px;
+  background:
+    radial-gradient(70% 78% at 18% 24%, rgba(6, 18, 34, 0.84), transparent 72%),
+    radial-gradient(72% 88% at 84% 72%, rgba(14, 14, 30, 0.78), transparent 74%),
+    linear-gradient(135deg, rgba(4, 8, 16, 0.72), rgba(6, 10, 18, 0.34));
+  box-shadow: 0 20px 56px rgba(0,0,0,0.32);
+  filter: blur(28px);
+  backdrop-filter: blur(18px) brightness(0.82) saturate(1.06);
+  -webkit-backdrop-filter: blur(18px) brightness(0.82) saturate(1.06);
+  -webkit-mask-image: radial-gradient(closest-side, black 50%, transparent 96%);
+  mask-image: radial-gradient(closest-side, black 50%, transparent 96%);
+}
+.floatphrase[data-family="sport"]::before{
+  background:
+    radial-gradient(66% 72% at 22% 24%, rgba(6, 18, 34, 0.84), transparent 68%),
+    radial-gradient(64% 68% at 78% 74%, rgba(7, 28, 40, 0.78), transparent 72%),
+    radial-gradient(56% 56% at 26% 32%, rgba(34,211,238,0.28), transparent 70%),
+    linear-gradient(135deg, rgba(5, 10, 18, 0.74), rgba(6, 12, 20, 0.36));
+}
+.floatphrase[data-family="product"]::before{
+  background:
+    radial-gradient(66% 72% at 20% 24%, rgba(12, 10, 24, 0.86), transparent 68%),
+    radial-gradient(64% 68% at 82% 74%, rgba(22, 10, 34, 0.8), transparent 72%),
+    radial-gradient(58% 58% at 28% 30%, rgba(244,114,182,0.26), transparent 72%),
+    linear-gradient(135deg, rgba(11, 8, 18, 0.76), rgba(8, 8, 18, 0.38));
+}
+.floatphrase--hero{
+  max-width: min(18ch, 28vw);
+}
+.floatphrase--ui{
+  max-width: none;
+  font-size: clamp(14px, 1.1vw, 18px);
+  letter-spacing: 0.18em;
+  line-height: 1;
+  padding: 0.55em 0.8em;
+}
+.floatphrase--ui::before{
+  inset: -0.45em -0.75em;
+  border-radius: 999px;
+  filter: blur(18px);
 }
 @media (max-width: 720px){
-  .floatphrase{ font-size: clamp(24px, 8vw, 46px); max-width: 92vw; }
+  .floatphrase{
+    font-size: clamp(18px, 5.4vw, 32px);
+    max-width: min(15ch, 72vw);
+  }
+  .floatphrase--hero{ max-width: min(15ch, 72vw); }
+  .floatphrase--ui{ font-size: 12px; letter-spacing: 0.14em; }
 }
 
 /* dark, blurred backdrop patch directly behind each word — same
@@ -314,6 +368,59 @@ body.cursor-hover .cursor-ring{
    PRELOADER — the only solid-fill screen on the site (it's the
    loading gate, shown before the video is even ready)
    ========================================================= */
+
+.winner-banner{
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  z-index: 2;
+  width: min(72vw, 760px);
+  transform: translate(-50%, -50%);
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+}
+.winner-banner::before{
+  content:'';
+  position: absolute;
+  inset: -18% -14%;
+  z-index: -1;
+  border-radius: 999px;
+  background:
+    radial-gradient(60% 70% at 50% 50%, rgba(4,8,16,0.98), transparent 72%),
+    radial-gradient(40% 50% at 24% 30%, rgba(34,211,238,0.22), transparent 70%),
+    radial-gradient(40% 50% at 76% 64%, rgba(244,114,182,0.18), transparent 72%);
+  filter: blur(34px);
+  backdrop-filter: blur(22px) brightness(0.66);
+  -webkit-backdrop-filter: blur(22px) brightness(0.66);
+}
+.winner-banner__eyebrow{
+  display: inline-flex;
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(7,12,20,0.9), rgba(8,10,18,0.56));
+  color: rgba(244,247,255,0.88);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.24);
+}
+.winner-banner__text{
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(42px, 7vw, 112px);
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+  background: linear-gradient(90deg, #dff8ff 0%, #79dfff 24%, #9f8cff 56%, #ff8fdc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(247,248,252,0.22);
+  text-shadow: none;
+  filter: drop-shadow(0 8px 30px rgba(0,0,0,0.54));
+}
 .preloader{
   position: fixed;
   inset: 0;
@@ -362,6 +469,7 @@ body.cursor-hover .cursor-ring{
   align-items: center;
   justify-content: space-between;
   padding: 20px var(--gutter);
+  gap: 18px;
 }
 /* since the nav no longer hides on scroll-down, it now sits over
    whatever busy video frame is playing behind it at all times — a
@@ -432,9 +540,26 @@ body.cursor-hover .cursor-ring{
 .nav__sound-off{ display: none; }
 .nav__sound[aria-pressed="true"] .nav__sound-on{ display: none; }
 .nav__sound[aria-pressed="true"] .nav__sound-off{ display: block; }
+.nav__percent{
+  min-width: 56px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(135deg, rgba(7,10,18,0.78), rgba(7,10,18,0.28));
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(247,248,252,0.92);
+  text-align: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 28px rgba(0,0,0,0.22);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
 
 @media (max-width: 720px){
   .nav__sound{ width: 30px; height: 30px; }
+  .nav__percent{ min-width: 48px; padding: 8px 10px; font-size: 10px; }
 }
 
 .nav__progress{
@@ -590,6 +715,34 @@ body.cursor-hover .cursor-ring{
   filter: blur(48px);
   pointer-events: none;
 }
+.hero__season-chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background:
+    linear-gradient(135deg, rgba(9,14,26,0.76), rgba(9,14,26,0.28)),
+    var(--text-fog);
+  color: rgba(247,248,252,0.92);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 36px rgba(0,0,0,0.24);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.hero__season-chip::before{
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--holo-gradient);
+  box-shadow: 0 0 18px rgba(34,211,238,0.5);
+}
 
 /* floating title-card sequence that plays as the hero approaches —
    same visual language as the global floatword system (holo-gradient
@@ -620,6 +773,7 @@ body.cursor-hover .cursor-ring{
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  -webkit-text-stroke: 1px rgba(245,247,255,0.14);
   /* one tight dark shadow for depth only — the color/glow now comes
      from the ::before fog patch behind it, not stacked on the letters */
   filter: drop-shadow(0 2px 12px rgba(0,0,0,0.6));
@@ -636,12 +790,13 @@ body.cursor-hover .cursor-ring{
   mask-image: radial-gradient(closest-side, black 60%, transparent 98%);
 }
 @media (max-width: 720px){
-  .hero__flash-line{ font-size: clamp(30px, 11vw, 62px); white-space: normal; max-width: 90vw; }
+  .hero__flash-line{ font-size: clamp(24px, 11vw, 42px); white-space: normal; max-width: 90vw; }
 }
 .hero__title{
-  font-size: clamp(48px, 10vw, 140px);
+  font-size: clamp(40px, 10vw, 80px);
   overflow: hidden;
   color: var(--ink);
+  max-width: 10ch;
 }
 .hero__title .line{
   display: block;
@@ -650,6 +805,7 @@ body.cursor-hover .cursor-ring{
 .hero__title .line span{
   display: inline-block;
   will-change: transform;
+  -webkit-text-stroke: 1px rgba(245,247,255,0.14);
 }
 .hero__title .line--accent{
   background: var(--holo-gradient);
@@ -671,6 +827,94 @@ body.cursor-hover .cursor-ring{
   font-size: 17px;
   line-height: 1.6;
   color: var(--ink-dim);
+}
+.hero__orbitals{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hero__orbital{
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 190px;
+  padding: 14px 16px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background:
+    linear-gradient(135deg, rgba(10,16,28,0.7), rgba(10,16,28,0.24)),
+    var(--text-fog);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 14px 42px rgba(0,0,0,0.22);
+  backdrop-filter: blur(16px) saturate(1.08);
+  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+}
+.hero__orbital--left{ left: -2%; top: 8%; }
+.hero__orbital--top{ right: 8%; top: -4%; }
+.hero__orbital--right{ right: -1%; bottom: 10%; }
+.hero__orbital-copy{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(247,248,252,0.9);
+}
+.hero__orbital-ball,
+.hero__orbital-ring,
+.hero__orbital-beam{
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+}
+.hero__orbital-ball{
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 32%, rgba(255,255,255,0.95), rgba(205,216,255,0.58) 36%, rgba(73,21,114,0.2) 60%, rgba(8,10,18,0.2) 100%);
+  box-shadow: 0 0 22px rgba(139,92,246,0.3);
+}
+.hero__orbital-ball::before,
+.hero__orbital-ball::after{
+  content:'';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 1px solid rgba(10,12,20,0.28);
+}
+.hero__orbital-ring{
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: inset 0 0 24px rgba(34,211,238,0.16), 0 0 22px rgba(139,92,246,0.28);
+}
+.hero__orbital-ring::before{
+  content:'';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 1px dashed rgba(247,248,252,0.32);
+}
+.hero__orbital-beam{
+  width: 40px;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(34,211,238,0.16), rgba(247,248,252,0.9), rgba(244,114,182,0.2));
+  box-shadow: 0 0 18px rgba(247,248,252,0.38);
+}
+.hero__orbital-beam::before{
+  content:'';
+  position: absolute;
+  left: 12px;
+  top: -8px;
+  width: 16px;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0));
+  filter: blur(4px);
 }
 .hero__cta-row{
   display: flex;
@@ -711,6 +955,7 @@ body.cursor-hover .cursor-ring{
 
 @media (max-width: 560px){
   .hero__foot{ flex-direction: column; align-items: flex-start; }
+  .hero__orbitals{ display: none; }
 }
 
 /* =========================================================
@@ -725,6 +970,30 @@ body.cursor-hover .cursor-ring{
   align-items: center;
   justify-content: center;
 }
+.galaxy::before{
+  content:'';
+  position: absolute;
+  inset: 8% 10%;
+  z-index: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 24%, rgba(255,255,255,0) 62%),
+    radial-gradient(circle at 50% 50%, rgba(116,232,255,0.12) 0%, rgba(116,232,255,0) 58%);
+  filter: blur(30px);
+  pointer-events: none;
+}
+.galaxy::after{
+  content:'';
+  position: absolute;
+  inset: 17% 23%;
+  z-index: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    inset 0 0 80px rgba(255,255,255,0.02),
+    0 0 38px rgba(116,232,255,0.08);
+  pointer-events: none;
+}
 .galaxy__canvas{
   position: absolute;
   inset: 0;
@@ -732,6 +1001,7 @@ body.cursor-hover .cursor-ring{
   height: 100%;
   display: block;
   z-index: 2; /* particles paint ABOVE the dark backing (z-index:1 below) */
+  filter: saturate(1.12) contrast(1.06) brightness(1.04);
 }
 .galaxy__vignette{
   position: absolute;
@@ -941,6 +1211,270 @@ body.cursor-hover .cursor-ring{
 }
 
 /* =========================================================
+   QUOTE CAROUSEL — square football manifesto cards
+   ========================================================= */
+.quote-carousel,
+.flags-carousel{
+  position: relative;
+  padding: clamp(100px, 12vw, 160px) 0;
+  overflow: hidden;
+}
+.quote-carousel__wrap,
+.flags-carousel__wrap{
+  position: relative;
+  z-index: 2;
+}
+.quote-carousel__header,
+.flags-carousel__header{
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+  margin-bottom: 34px;
+}
+.quote-carousel__header::before,
+.flags-carousel__header::before{
+  content:'';
+  position: absolute;
+  inset: -16% -10%;
+  z-index: -1;
+  border-radius: 44px;
+  background: var(--text-fog);
+  filter: blur(42px);
+}
+.quote-carousel__title,
+.flags-carousel__title{
+  font-size: clamp(48px, 8.8vw, 128px);
+  margin-top: 18px;
+}
+.quote-carousel__viewport,
+.flags-carousel__viewport{
+  overflow: hidden;
+  position: relative;
+  perspective: 1400px;
+  perspective-origin: 50% 40%;
+  padding: 28px 0 44px;
+}
+.quote-carousel__track,
+.flags-carousel__track{
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  will-change: transform;
+  transform-origin: 50% 50%;
+  transform-style: preserve-3d;
+}
+.quote-card{
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 min(360px, 78vw);
+  aspect-ratio: 1 / 1;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 34px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background:
+    linear-gradient(145deg, rgba(10,16,28,0.84), rgba(10,16,28,0.48)),
+    radial-gradient(circle at 24% 18%, rgba(116,232,255,0.26), transparent 42%),
+    radial-gradient(circle at 78% 78%, rgba(255,141,216,0.2), transparent 44%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 24px 70px rgba(0,0,0,0.28);
+  backdrop-filter: blur(16px) saturate(1.08);
+  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+  transform: scale(0.92);
+  opacity: 0.56;
+  transition: transform .45s var(--ease), opacity .45s var(--ease), border-color .45s var(--ease);
+  transform-style: preserve-3d;
+}
+.quote-card.is-active{
+  transform: scale(1);
+  opacity: 1;
+  border-color: rgba(255,255,255,0.28);
+}
+.quote-card::before{
+  content:'';
+  position: absolute;
+  inset: -20% auto auto -18%;
+  width: 62%;
+  height: 180%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0));
+  transform: rotate(18deg);
+  opacity: 0.3;
+  pointer-events: none;
+}
+.quote-card__tag{
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(247,248,252,0.82);
+  background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+}
+.quote-card__text{
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4.2vw, 62px);
+  line-height: 0.95;
+  letter-spacing: 0.015em;
+  background: var(--holo-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(245,247,255,0.22);
+  text-shadow: none;
+  filter: drop-shadow(0 4px 22px rgba(0,0,0,0.54));
+}
+.quote-card__text::before{
+  content:'';
+  position: absolute;
+  inset: -0.28em -0.36em;
+  z-index: -1;
+  border-radius: 28px;
+  background:
+    radial-gradient(58% 58% at 22% 24%, rgba(14, 28, 44, 0.94), transparent 72%),
+    radial-gradient(64% 64% at 78% 74%, rgba(16, 12, 34, 0.9), transparent 74%),
+    linear-gradient(135deg, rgba(4, 8, 16, 0.76), rgba(5, 10, 18, 0.4));
+  filter: blur(22px);
+  -webkit-mask-image: radial-gradient(closest-side, black 56%, transparent 96%);
+  mask-image: radial-gradient(closest-side, black 56%, transparent 96%);
+}
+.quote-carousel__controls{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 24px;
+}
+.quote-carousel__btn{
+  min-width: 90px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: linear-gradient(135deg, rgba(10,16,28,0.84), rgba(10,16,28,0.3));
+  color: rgba(247,248,252,0.88);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.quote-carousel__dots{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.quote-carousel__dot{
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.12);
+  transition: transform .3s var(--ease), background .3s var(--ease);
+}
+.quote-carousel__dot.is-active{
+  transform: scale(1.3);
+  background: linear-gradient(135deg, #74e8ff, #ff8dd8);
+}
+
+/* =========================================================
+   FLAGS CAROUSEL — tournament nation badges
+   ========================================================= */
+.flag-card{
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 min(220px, 44vw);
+  padding: 20px;
+  border-radius: 28px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background:
+    linear-gradient(145deg, rgba(10,16,28,0.9), rgba(10,16,28,0.46)),
+    radial-gradient(circle at 20% 18%, rgba(116,232,255,0.18), transparent 38%),
+    radial-gradient(circle at 82% 82%, rgba(255,141,216,0.14), transparent 42%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 20px 54px rgba(0,0,0,0.24);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transform-style: preserve-3d;
+}
+.flag-card::before{
+  content:'';
+  position: absolute;
+  inset: -30% auto auto -20%;
+  width: 62%;
+  height: 170%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0));
+  transform: rotate(22deg);
+  opacity: 0.4;
+  pointer-events: none;
+}
+.flag-card__flag{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.25 / 1;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.26),
+    0 0 0 1px rgba(255,255,255,0.08);
+}
+.flag-card__name{
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
+  font-family: var(--font-display);
+  font-size: 30px;
+  letter-spacing: 0.04em;
+  background: var(--holo-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 0.8px rgba(244,247,255,0.22);
+  text-shadow: none;
+  filter: drop-shadow(0 4px 20px rgba(0,0,0,0.52));
+  text-transform: uppercase;
+}
+.flag-card__name::before{
+  content:'';
+  position: absolute;
+  inset: -0.36em -0.42em;
+  z-index: -1;
+  border-radius: 999px;
+  background:
+    radial-gradient(60% 60% at 22% 28%, rgba(8, 24, 34, 0.94), transparent 72%),
+    radial-gradient(56% 56% at 78% 72%, rgba(18, 10, 30, 0.88), transparent 74%);
+  filter: blur(18px);
+  -webkit-mask-image: radial-gradient(closest-side, black 54%, transparent 96%);
+  mask-image: radial-gradient(closest-side, black 54%, transparent 96%);
+}
+.flag-card__flag--brazil{ background: linear-gradient(180deg, #009c3b 0%, #009c3b 100%); }
+.flag-card__flag--brazil::before{ content:''; position:absolute; inset:20% 28%; background:#ffdf00; transform:rotate(45deg); }
+.flag-card__flag--brazil::after{ content:''; position:absolute; inset:34% 38%; border-radius:50%; background:#002776; }
+.flag-card__flag--argentina{ background: linear-gradient(180deg, #74acdf 0 33%, #ffffff 33% 66%, #74acdf 66% 100%); }
+.flag-card__flag--argentina::after{ content:''; position:absolute; width:22%; aspect-ratio:1; left:39%; top:39%; border-radius:50%; background:#f6b40e; }
+.flag-card__flag--portugal{ background: linear-gradient(90deg, #046a38 0 40%, #da291c 40% 100%); }
+.flag-card__flag--portugal::after{ content:''; position:absolute; width:26%; aspect-ratio:1; left:27%; top:37%; border-radius:50%; background:#ffdf00; box-shadow: inset 0 0 0 6px rgba(255,255,255,0.18); }
+.flag-card__flag--france{ background: linear-gradient(90deg, #0055a4 0 33%, #ffffff 33% 66%, #ef4135 66% 100%); }
+.flag-card__flag--spain{ background: linear-gradient(180deg, #aa151b 0 25%, #f1bf00 25% 75%, #aa151b 75% 100%); }
+.flag-card__flag--spain::after{ content:''; position:absolute; width:14%; aspect-ratio:1.2; left:18%; top:40%; background:#aa151b; border-radius:4px; }
+.flag-card__flag--japan{ background:#ffffff; }
+.flag-card__flag--japan::after{ content:''; position:absolute; width:30%; aspect-ratio:1; left:35%; top:35%; border-radius:50%; background:#bc002d; }
+
+@media (max-width: 720px){
+  .quote-carousel__controls{ justify-content: center; flex-wrap: wrap; }
+  .quote-card{ flex-basis: min(300px, 80vw); }
+  .flag-card{ flex-basis: min(180px, 56vw); }
+}
+
+/* =========================================================
    STATEMENT — bare, centered, over the video
    ========================================================= */
 .statement{
@@ -1031,6 +1565,40 @@ body.cursor-hover .cursor-ring{
   color: var(--ink-dim);
   font-size: 18px;
   line-height: 1.6;
+}
+.cta__tokens{
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 34px;
+}
+.cta__token{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: linear-gradient(135deg, rgba(10,16,28,0.68), rgba(10,16,28,0.24));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 32px rgba(0,0,0,0.18);
+  color: rgba(247,248,252,0.86);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.cta__token--ball span{ background: radial-gradient(circle at 35% 32%, #ffffff 0%, #d7e1ff 40%, #8b5cf6 100%); }
+.cta__token--pulse span{ background: linear-gradient(135deg, #22d3ee, #8b5cf6); }
+.cta__token--lights span{ background: linear-gradient(135deg, #f472b6, #f7f8fc); }
+.cta__token span{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--holo-gradient);
+  box-shadow: 0 0 18px rgba(139,92,246,0.42);
 }
 .btn{
   display: inline-flex;
@@ -1130,6 +1698,8 @@ body.cursor-hover .cursor-ring{
 .hero__flash-line,
 .btn,
 .eyebrow,
+.quote-carousel__title,
+.flags-carousel__title,
 .galaxy__title,
 .galaxy__sub,
 .feature__title,
@@ -1150,6 +1720,7 @@ body.cursor-hover .cursor-ring{
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  -webkit-text-stroke: 0.7px rgba(244,247,255,0.18);
   text-shadow: none;
   /* one tight dark shadow for readability/depth only — the colorful
      glow now lives in the ::before fog patches behind each text block
@@ -1172,6 +1743,8 @@ body.cursor-hover .cursor-ring{
 .hero__title .line--accent,
 .galaxy__title em,
 .cta__title span,
+.quote-carousel__title .holo-text,
+.flags-carousel__title .holo-text,
 .nav__logo span,
 .footer__logo span,
 .preloader__mark .holo-text{

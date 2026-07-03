@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="css/style.css?v=20260703230842">
+<link rel="stylesheet" href="css/style.css?v=20260703124500">
 </head>
 <body>
 
@@ -75,6 +75,7 @@
     <svg class="nav__sound-on" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>
     <svg class="nav__sound-off" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
   </button>
+  <div class="nav__percent" aria-live="polite">00%</div>
   <div class="nav__progress"><div class="nav__progress-fill"></div></div>
 </header>
 
@@ -88,7 +89,7 @@
   <canvas class="floatwords__smoke"></canvas>
   <span class="floatword" data-depth="near" style="top:24%; left:20%;">Speed</span>
   <span class="floatword" data-depth="far" style="top:14%; left:80%;">Power</span>
-  <span class="floatword" data-depth="mid" style="top:50%; left:18%;">Control</span>
+  <span class="floatword" data-depth="mid" style="top:50%; left:68%;">Control</span>
   <span class="floatword" data-depth="near" style="top:86%; left:26%;">Precision</span>
   <span class="floatword" data-depth="far" style="top:16%; left:50%;">Teamwork</span>
   <span class="floatword" data-depth="mid" style="top:52%; left:82%;">Passion</span>
@@ -96,23 +97,11 @@
   <span class="floatword" data-depth="far" style="top:22%; left:64%;">Performance</span>
   <span class="floatword" data-depth="mid" style="top:84%; left:48%;">Confidence</span>
   <span class="floatword" data-depth="near" style="top:36%; left:20%;">Victory</span>
-
-  <!-- second floating layer: longer sport/product phrases, each tied to
-       the SAME section anchors as the words above but a later
-       sub-window of that section's own scroll transit, and each using
-       one of two different animation recipes (drift-skew / side-slide)
-       for variety instead of every floating text moving identically —
-       see main.js's runFloatPhrases. -->
-  <p class="floatphrase" data-anchor="#promo" data-style="drift" style="top:20%;">Gear up for World Cup Season 2026.</p>
-  <p class="floatphrase" data-anchor="#gear" data-style="slide" data-side="left" style="top:86%;">Engineered for players who demand more from every match.</p>
-  <p class="floatphrase" data-anchor="#numbers" data-style="drift" style="top:20%;">Built to handle every challenge on the pitch.</p>
-  <p class="floatphrase" data-anchor="#training" data-style="slide" data-side="right" style="top:86%;">Football rewards those who keep training when nobody is watching.</p>
-  <p class="floatphrase" data-anchor="#match" data-style="drift" style="top:20%;">The difference between winning and losing is often one decision.</p>
-  <p class="floatphrase" data-anchor="#fan" data-style="slide" data-side="left" style="top:86%;">Join millions of fans celebrating the world's game.</p>
-  <p class="floatphrase" data-anchor="#news" data-style="drift" style="top:20%;">Every match is a chance to make history.</p>
-  <p class="floatphrase" data-anchor="#community" data-style="slide" data-side="right" style="top:86%;">Great teams move together as one.</p>
-  <p class="floatphrase" data-anchor=".statement" data-style="drift" style="top:20%;">Leave your mark on the game.</p>
-  <p class="floatphrase" data-anchor="#join" data-style="slide" data-side="left" style="top:86%;">The future of football belongs to those who never stop improving.</p>
+  <div class="floatphrase-layer"></div>
+  <div class="winner-banner">
+    <span class="winner-banner__eyebrow">Final Whistle</span>
+    <p class="winner-banner__text">Play Like a Champion Today.</p>
+  </div>
 </div>
 
 <main>
@@ -141,20 +130,23 @@
        of scattered page-wide. ============ -->
   <section class="hero" id="hero">
     <div class="hero__flash" aria-hidden="true">
-      <span class="hero__flash-line">The crowd is waiting.</span>
-      <span class="hero__flash-line">The lights are on.</span>
-      <span class="hero__flash-line">The world is watching.</span>
+      <span class="hero__flash-line">Every champion starts somewhere.</span>
+      <span class="hero__flash-line">Every dream begins with a ball.</span>
+      <span class="hero__flash-line">Every journey starts with a single step.</span>
       <span class="hero__flash-line">Train with purpose.</span>
-      <span class="hero__flash-line">Compete with confidence.</span>
       <span class="hero__flash-line">Play with passion.</span>
+      <span class="hero__flash-line">Compete with confidence.</span>
+      <span class="hero__flash-line">Lead with courage.</span>
+      <span class="hero__flash-line">Chase greatness.</span>
       <span class="hero__flash-line">Create history.</span>
-      <span class="hero__flash-line">Road to World Cup 2026.</span>
+      <span class="hero__flash-line">Road to FIFA World Cup 2026.</span>
     </div>
     <div class="hero__content">
+      <div class="hero__season-chip">World Cup Season 2026</div>
       <h1 class="hero__title display">
-        <span class="line"><span>THE FUTURE OF</span></span>
-        <span class="line"><span>FOOTBALL STARTS</span></span>
-        <span class="line line--accent"><span>HERE</span></span>
+        <span class="line"><span>The Future of</span></span>
+        <span class="line line--accent"><span>Football</span></span>
+        <span class="line"><span>Starts Here</span></span>
       </h1>
       <div class="hero__foot">
         <p class="hero__desc">Gear up for the 2026 World Cup season with premium football gear, training programs, and fan collections.</p>
@@ -164,6 +156,20 @@
             <span>Scroll</span>
             <div class="hero__scroll-line"></div>
           </div>
+        </div>
+      </div>
+      <div class="hero__orbitals" aria-hidden="true">
+        <div class="hero__orbital hero__orbital--left" data-depth="0.35">
+          <span class="hero__orbital-ball"></span>
+          <span class="hero__orbital-copy">Match Day Ready</span>
+        </div>
+        <div class="hero__orbital hero__orbital--top" data-depth="0.2">
+          <span class="hero__orbital-beam"></span>
+          <span class="hero__orbital-copy">Stadium Light Energy</span>
+        </div>
+        <div class="hero__orbital hero__orbital--right" data-depth="0.42">
+          <span class="hero__orbital-ring"></span>
+          <span class="hero__orbital-copy">Control. Precision. Speed.</span>
         </div>
       </div>
     </div>
@@ -232,6 +238,39 @@
     </div>
   </section>
 
+  <section class="quote-carousel" id="stories">
+    <div class="wrap quote-carousel__wrap">
+      <div class="quote-carousel__header">
+        <div class="eyebrow">Floating Match Stories</div>
+        <h2 class="quote-carousel__title display">Football words<br>for the <span class="holo-text">big stage.</span></h2>
+      </div>
+      <div class="quote-carousel__viewport">
+        <div class="quote-carousel__track">
+          <article class="quote-card is-active">
+            <div class="quote-card__tag">Discipline</div>
+            <p class="quote-card__text">Champions are built through discipline long before they lift trophies.</p>
+          </article>
+          <article class="quote-card">
+            <div class="quote-card__tag">Match Vision</div>
+            <p class="quote-card__text">The best players see opportunities before others see space.</p>
+          </article>
+          <article class="quote-card">
+            <div class="quote-card__tag">Pressure</div>
+            <p class="quote-card__text">Pressure creates champions.</p>
+          </article>
+          <article class="quote-card">
+            <div class="quote-card__tag">Product Performance</div>
+            <p class="quote-card__text">Engineered for players who demand more from every match.</p>
+          </article>
+          <article class="quote-card">
+            <div class="quote-card__tag">World Cup Energy</div>
+            <p class="quote-card__text">Gear up for FIFA World Cup 2026.</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ SECTION 2 — TRAINING ACADEMY ============ -->
   <section class="feature feature--reverse" id="training">
     <canvas class="feature__ambient"></canvas>
@@ -277,6 +316,43 @@
         <li><b>11</b> Limited matchday drops</li>
         <li><b>12</b> Fan-first pricing on core essentials</li>
       </ul>
+    </div>
+  </section>
+
+  <section class="flags-carousel" id="flags">
+    <div class="wrap flags-carousel__wrap">
+      <div class="flags-carousel__header">
+        <div class="eyebrow">Tournament Nations</div>
+        <h2 class="flags-carousel__title display">Flags of the<br><span class="holo-text">world's game.</span></h2>
+      </div>
+      <div class="flags-carousel__viewport">
+        <div class="flags-carousel__track">
+          <article class="flag-card">
+            <div class="flag-card__flag flag-card__flag--brazil"></div>
+            <div class="flag-card__name">Brazil</div>
+          </article>
+          <article class="flag-card">
+            <div class="flag-card__flag flag-card__flag--argentina"></div>
+            <div class="flag-card__name">Argentina</div>
+          </article>
+          <article class="flag-card">
+            <div class="flag-card__flag flag-card__flag--portugal"></div>
+            <div class="flag-card__name">Portugal</div>
+          </article>
+          <article class="flag-card">
+            <div class="flag-card__flag flag-card__flag--france"></div>
+            <div class="flag-card__name">France</div>
+          </article>
+          <article class="flag-card">
+            <div class="flag-card__flag flag-card__flag--spain"></div>
+            <div class="flag-card__name">Spain</div>
+          </article>
+          <article class="flag-card">
+            <div class="flag-card__flag flag-card__flag--japan"></div>
+            <div class="flag-card__name">Japan</div>
+          </article>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -327,6 +403,11 @@
       <h2 class="cta__title display">Build your<br>football <span>legacy.</span></h2>
       <p class="cta__sub">Join the World Cup Season 2026 football movement.</p>
       <a href="#hero" class="btn">Join Now</a>
+      <div class="cta__tokens" aria-hidden="true">
+        <div class="cta__token cta__token--ball" data-depth="0.16"><span></span>Elite Match Ball</div>
+        <div class="cta__token cta__token--pulse" data-depth="0.22"><span></span>Training Pulse</div>
+        <div class="cta__token cta__token--lights" data-depth="0.18"><span></span>World Stage Ready</div>
+      </div>
     </div>
   </section>
 
@@ -355,7 +436,7 @@
 <script src="vendor/ScrollTrigger.min.js"></script>
 <script src="vendor/SplitText.min.js"></script>
 <script src="vendor/three.global.min.js"></script>
-<script src="js/main.js?v=20260703230842"></script>
-<script src="js/effects.js?v=20260703230842"></script>
+<script src="js/main.js?v=20260703124500"></script>
+<script src="js/effects.js?v=20260703124500"></script>
 </body>
 </html>

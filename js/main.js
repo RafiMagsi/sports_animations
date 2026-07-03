@@ -27,6 +27,119 @@
 
   gsap.registerPlugin(ScrollTrigger, SplitText);
 
+  const SPORT_FLOAT_TEXTS = [
+    "Every great player starts with a single touch of the ball.",
+    "Champions are built through discipline long before they lift trophies.",
+    "Football rewards those who keep training when nobody is watching.",
+    "The difference between winning and losing is often one decision.",
+    "Every pass creates a new opportunity.",
+    "Every sprint can change the outcome of a match.",
+    "Great teams move together as one.",
+    "Control the ball. Control the game.",
+    "Confidence is earned through preparation.",
+    "Pressure creates champions.",
+    "The best players see opportunities before others see space.",
+    "Success comes from thousands of small improvements.",
+    "The crowd celebrates goals. Players remember the sacrifices.",
+    "Trust your teammates. Trust the process.",
+    "Every training session shapes the player you become.",
+    "Football is more than a game. It is a mindset.",
+    "The road to greatness begins with consistency.",
+    "Play with passion. Compete with purpose.",
+    "Every match is a chance to make history.",
+    "The world's biggest stage starts with today's training.",
+    "Victory belongs to those who prepare for it.",
+    "Dream bigger. Train harder. Play smarter.",
+    "The future of football belongs to those who never stop improving.",
+    "Leave your mark on the game.",
+    "The world is watching. Show them what you're made of."
+  ];
+
+  const PRODUCT_FLOAT_TEXTS = [
+    "Engineered for players who demand more from every match.",
+    "Designed to perform when every second matters.",
+    "Built for speed. Tested for performance.",
+    "Premium football gear inspired by the world's biggest stage.",
+    "Every detail crafted to elevate your game.",
+    "Trusted by players. Designed for champions.",
+    "Innovation meets performance on every touch.",
+    "Created for modern football.",
+    "The perfect balance of control, comfort, and precision.",
+    "Train harder with equipment built for professionals.",
+    "Designed to keep up with the fastest game on earth.",
+    "Performance starts with the right equipment.",
+    "Built to handle every challenge on the pitch.",
+    "Inspired by champions. Made for the next generation.",
+    "More than football gear. Built for ambition.",
+    "Premium quality for players who refuse to settle.",
+    "Every product is designed with performance in mind.",
+    "Engineered for confidence under pressure.",
+    "Prepare for greatness with every training session.",
+    "Gear up for FIFA World Cup 2026.",
+    "Limited edition collections inspired by football's biggest tournament.",
+    "Join millions of fans celebrating the world's game.",
+    "Built for match day. Ready for every day.",
+    "Your journey starts with the right equipment."
+  ];
+
+  const HERO_FLOAT_TEXTS = [
+    "World Cup Season 2026",
+    "The Future of Football Starts Here.",
+    "Gear up for the 2026 World Cup season with premium football gear, training programs, and fan collections.",
+    "Explore Collection",
+    "Scroll"
+  ];
+  const WINNER_SLOGAN = "Play Like a Champion Today.";
+  function floatBlur(px) {
+    return px > 0 ? "blur(" + px + "px)" : "none";
+  }
+
+  function buildFloatingNarratives() {
+    const layer = document.querySelector(".floatphrase-layer");
+    if (!layer) return;
+    layer.innerHTML = "";
+
+    const distributed = [
+      { anchor: "#promo", copy: HERO_FLOAT_TEXTS[0], family: "hero", top: "16%", left: "68%" },
+      { anchor: "#gear", copy: SPORT_FLOAT_TEXTS[0], family: "sport", top: "24%", left: "72%" },
+      { anchor: "#numbers", copy: HERO_FLOAT_TEXTS[1], family: "hero", top: "76%", left: "27%" },
+      { anchor: "#training", copy: PRODUCT_FLOAT_TEXTS[4], family: "product", top: "24%", left: "73%" },
+      { anchor: "#match", copy: SPORT_FLOAT_TEXTS[4], family: "sport", top: "72%", left: "28%" },
+      { anchor: "#fan", copy: HERO_FLOAT_TEXTS[2], family: "hero", top: "24%", left: "72%" },
+      { anchor: "#news", copy: PRODUCT_FLOAT_TEXTS[20], family: "product", top: "70%", left: "28%" },
+      { anchor: "#community", copy: SPORT_FLOAT_TEXTS[24], family: "sport", top: "22%", left: "73%" },
+      { anchor: ".statement", copy: "Build Your Football Legacy.", family: "product", top: "74%", left: "31%" },
+      { anchor: "#join", copy: "Join the World Cup 2026 Football Movement.", family: "hero", top: "28%", left: "50%" }
+    ];
+
+    distributed.forEach((item, index) => {
+      const phrase = document.createElement("p");
+      const style = index % 3 === 0 ? "drift" : "slide";
+      const side = index % 2 === 0 ? "left" : "right";
+
+      phrase.className = "floatphrase";
+      phrase.dataset.anchor = item.anchor;
+      phrase.dataset.style = style;
+      phrase.dataset.side = side;
+      phrase.dataset.family = item.family;
+      if (item.copy === "Explore Collection" || item.copy === "Scroll") {
+        phrase.classList.add("floatphrase--ui");
+      }
+      if (item.family === "hero") {
+        phrase.classList.add("floatphrase--hero");
+      }
+      phrase.style.top = item.top;
+      phrase.style.left = item.left;
+      phrase.textContent = item.copy;
+      layer.appendChild(phrase);
+    });
+
+    const winnerText = document.querySelector(".winner-banner__text");
+    if (winnerText) winnerText.textContent = WINNER_SLOGAN;
+  }
+
+  buildFloatingNarratives();
+
   // PER-FEATURE SAFETY NET — same pattern as effects.js's safeRun. Before
   // this, a SINGLE error anywhere in this file (a bad selector, a
   // section that's missing on the page, a plugin edge case) would throw
@@ -358,13 +471,18 @@
   safeRun("nav", function () {
     const nav = document.querySelector(".nav");
     const navProgressFill = document.querySelector(".nav__progress-fill");
+    const navPercent = document.querySelector(".nav__percent");
     gsap.set(nav, { yPercent: 0 });
     ScrollTrigger.create({
       start: 0,
       end: "max",
       onUpdate: (self) => {
+        const pct = Math.round(self.progress * 100);
         if (navProgressFill) {
-          gsap.set(navProgressFill, { width: self.progress * 100 + "%" });
+          gsap.set(navProgressFill, { width: pct + "%" });
+        }
+        if (navPercent) {
+          navPercent.textContent = String(pct).padStart(2, "0") + "%";
         }
       },
     });
@@ -426,29 +544,38 @@
   function runHeroIntro() {
     const lines = document.querySelectorAll(".hero__title .line span");
     const foot = document.querySelector(".hero__foot");
+    const season = document.querySelector(".hero__season-chip");
+    const orbitals = document.querySelectorAll(".hero__orbital");
 
     gsap.set(lines, { yPercent: 120 });
     gsap.set(foot, { opacity: 0, y: 20, filter: "blur(8px)" });
+    if (season) gsap.set(season, { opacity: 0, y: 18, scale: 0.96, filter: "blur(8px)" });
+    if (orbitals.length) gsap.set(orbitals, { opacity: 0, y: 28, scale: 0.92, filter: "blur(10px)" });
 
     if (reduceMotion) {
       gsap.set(lines, { yPercent: 0 });
       gsap.set(foot, { opacity: 1, y: 0, filter: "blur(0px)" });
+      if (season) gsap.set(season, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" });
+      if (orbitals.length) gsap.set(orbitals, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" });
       return;
     }
 
-    gsap
-      .timeline({
-        scrollTrigger: {
-          trigger: ".hero",
-          start: "top top",
-          end: "+=50%",
-          scrub: true,
-        },
-      })
-      // reveal: 0 -> 12% — lands right as the flash sequence (see
-      // runHeroFlash) finishes its last line
-      .to(lines, { yPercent: 0, stagger: 0.03, ease: "power2.out", duration: 0.1 }, 0.02)
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".hero",
+        start: "top top",
+        end: "+=50%",
+        scrub: true,
+      },
+    });
+    // reveal: 0 -> 12% — lands right as the flash sequence (see
+    // runHeroFlash) finishes its last line
+    if (season) {
+      tl.to(season, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", ease: "power2.out", duration: 0.08 }, 0.01);
+    }
+    tl.to(lines, { yPercent: 0, stagger: 0.03, ease: "power2.out", duration: 0.1 }, 0.02)
       .to(foot, { opacity: 1, y: 0, filter: "blur(0px)", ease: "power2.out", duration: 0.08 }, 0.1)
+      .to(orbitals, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", ease: "power2.out", duration: 0.12, stagger: 0.03 }, 0.08)
       // hold, fully readable: 12% -> 32%
       .to(".hero__content", { opacity: 1, duration: 0.2 }, 0.12)
       // disappear as the next section (galaxy) rises into view: 32% -> 62%
@@ -569,8 +696,8 @@
       ease: "none",
       scrollTrigger: {
         trigger: ".hero",
-        start: "bottom 85%",
-        end: "bottom 35%",
+        start: "top bottom",
+        end: "top 70%",
         scrub: true,
       },
     });
@@ -621,18 +748,18 @@
       let fromVars, holdVars, exitVars;
       if (variant === "rise") {
         gsap.set(word, { transformPerspective: 600 });
-        fromVars = { opacity: 0, y: 46, filter: "blur(18px)" };
-        holdVars = { opacity: 1, y: 0, filter: "blur(0px)" };
-        exitVars = { opacity: 0, y: -46, filter: "blur(16px)" };
+        fromVars = { opacity: 0, y: 46, filter: floatBlur(18) };
+        holdVars = { opacity: 1, y: 0, filter: "none" };
+        exitVars = { opacity: 0, y: -46, filter: floatBlur(16) };
       } else if (variant === "spin") {
         gsap.set(word, { transformPerspective: 600 });
-        fromVars = { opacity: 0, scale: 0.6, rotate: -12, filter: "blur(14px)" };
-        holdVars = { opacity: 1, scale: 1, rotate: 0, filter: "blur(0px)" };
-        exitVars = { opacity: 0, scale: 1.25, rotate: 10, filter: "blur(14px)" };
+        fromVars = { opacity: 0, scale: 0.6, rotate: -12, filter: floatBlur(14) };
+        holdVars = { opacity: 1, scale: 1, rotate: 0, filter: "none" };
+        exitVars = { opacity: 0, scale: 1.25, rotate: 10, filter: floatBlur(14) };
       } else {
-        fromVars = { opacity: 0, scale: 0.72, filter: "blur(16px)" };
-        holdVars = { opacity: 1, scale: 1, filter: "blur(0px)" };
-        exitVars = { opacity: 0, scale: 1.18, filter: "blur(14px)" };
+        fromVars = { opacity: 0, scale: 0.72, filter: floatBlur(16) };
+        holdVars = { opacity: 1, scale: 1, filter: "none" };
+        exitVars = { opacity: 0, scale: 1.18, filter: floatBlur(14) };
       }
 
       gsap.set(word, fromVars);
@@ -684,42 +811,328 @@
     const phrases = gsap.utils.toArray(".floatphrase");
     if (!phrases.length) return;
 
+    const grouped = new Map();
     phrases.forEach((phrase) => {
-      const anchor = document.querySelector(phrase.dataset.anchor);
-      const style = phrase.dataset.style;
-      const side = phrase.dataset.side === "right" ? 1 : -1;
+      const key = phrase.dataset.anchor;
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key).push(phrase);
+    });
 
-      if (style === "slide") {
-        gsap.set(phrase, { opacity: 0, x: 90 * side, rotation: 5 * side, filter: "blur(12px)" });
-      } else {
-        gsap.set(phrase, { opacity: 0, y: 26, skewY: 5, scale: 0.92, filter: "blur(14px)" });
+    grouped.forEach((group, anchorSel) => {
+      const anchor = document.querySelector(anchorSel);
+      if (!anchor) return;
+
+      group.forEach((phrase, index) => {
+        const style = phrase.dataset.style;
+        const side = phrase.dataset.side === "right" ? 1 : -1;
+        const segment = 1 / group.length;
+        const entry = index * segment;
+        const revealAt = entry + segment * 0.08;
+        const holdAt = entry + segment * 0.34;
+        const exitAt = entry + segment * 0.72;
+
+        if (style === "slide") {
+          gsap.set(phrase, { opacity: 0, x: 90 * side, rotation: 5 * side, filter: floatBlur(12) });
+        } else {
+          gsap.set(phrase, { opacity: 0, y: 26, skewY: 5, scale: 0.92, filter: floatBlur(14) });
+        }
+        if (reduceMotion) return;
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: anchor,
+            start: "top 54%",
+            end: "bottom 24%",
+            scrub: true,
+            onLeave: () => gsap.set(phrase, { opacity: 0 }),
+            onLeaveBack: () => gsap.set(phrase, { opacity: 0 }),
+          },
+        });
+
+        if (style === "slide") {
+          tl.to(phrase, { opacity: 1, x: 0, rotation: 0, filter: "none", duration: segment * 0.24, ease: "power2.out" }, revealAt)
+            .to(phrase, { opacity: 1, duration: segment * 0.22 }, holdAt)
+            .to(phrase, { opacity: 0, x: 130 * side, rotation: 7 * side, filter: floatBlur(12), duration: segment * 0.24, ease: "power2.in" }, exitAt);
+        } else {
+          tl.to(phrase, { opacity: 1, y: 0, skewY: 0, scale: 1, filter: "none", duration: segment * 0.24, ease: "power2.out" }, revealAt)
+            .to(phrase, { opacity: 1, duration: segment * 0.22 }, holdAt)
+            .to(phrase, { opacity: 0, y: -26, skewY: -5, scale: 0.94, filter: floatBlur(12), duration: segment * 0.24, ease: "power2.in" }, exitAt);
+        }
+      });
+    });
+  });
+
+  safeRun("interactiveObjects", function () {
+    const heroOrbitals = gsap.utils.toArray(".hero__orbital");
+    const ctaTokens = gsap.utils.toArray(".cta__token");
+    if (!heroOrbitals.length && !ctaTokens.length) return;
+
+    ctaTokens.forEach((node, index) => {
+      gsap.to(node, {
+        yPercent: index % 2 === 0 ? -10 : 10,
+        rotate: index % 2 === 0 ? -2 : 2,
+        duration: 2.8 + index * 0.2,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut"
+      });
+    });
+
+    const hero = document.querySelector(".hero");
+    if (heroOrbitals.length && hero && !reduceMotion) {
+      heroOrbitals.forEach((node, index) => {
+        const span = 18 + index * 7;
+        const rise = index === 1 ? -10 : index === 2 ? 12 : -4;
+        gsap.set(node, { xPercent: span, yPercent: rise, rotate: 0 });
+        gsap.to(node, {
+          xPercent: -span,
+          yPercent: rise + (index === 1 ? 8 : -6),
+          rotate: index === 1 ? -4 : 4,
+          ease: "none",
+          scrollTrigger: {
+            trigger: hero,
+            start: "top 92%",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+      });
+    }
+
+    if (isTouch || reduceMotion) return;
+
+    const cta = document.querySelector(".cta");
+
+    function applyParallax(container, selector, event) {
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const rx = ((event.clientX - rect.left) / rect.width) - 0.5;
+      const ry = ((event.clientY - rect.top) / rect.height) - 0.5;
+
+      container.querySelectorAll(selector).forEach((node) => {
+        const depth = parseFloat(node.dataset.depth || "0.18");
+        gsap.to(node, {
+          x: rx * 42 * depth,
+          y: ry * 34 * depth,
+          duration: 0.5,
+          ease: "power2.out"
+        });
+      });
+    }
+
+    if (hero) {
+      hero.addEventListener("mousemove", (event) => applyParallax(hero, ".hero__orbital", event));
+      hero.addEventListener("mouseleave", () => {
+        hero.querySelectorAll(".hero__orbital").forEach((node) => {
+          gsap.to(node, { x: 0, y: 0, duration: 0.5, ease: "power2.out" });
+        });
+      });
+    }
+
+    if (cta) {
+      cta.addEventListener("mousemove", (event) => applyParallax(cta, ".cta__token", event));
+      cta.addEventListener("mouseleave", () => {
+        cta.querySelectorAll(".cta__token").forEach((node) => {
+          gsap.to(node, { x: 0, y: 0, duration: 0.5, ease: "power2.out" });
+        });
+      });
+    }
+  });
+
+  function clampFloatingText() {
+    const overlays = gsap.utils.toArray(".floatword, .floatphrase");
+    if (!overlays.length) return;
+
+    const nav = document.querySelector(".nav");
+    const navBottom = nav ? nav.getBoundingClientRect().bottom : 0;
+    const safeTop = Math.max(navBottom + 18, window.innerHeight * 0.08);
+    const safeSide = Math.max(20, window.innerWidth * 0.035);
+    const safeBottom = Math.max(24, window.innerHeight * 0.06);
+
+    overlays.forEach((el) => {
+      if (!el.dataset.baseLeft) el.dataset.baseLeft = el.style.left || "50%";
+      if (!el.dataset.baseTop) el.dataset.baseTop = el.style.top || "50%";
+
+      el.style.left = el.dataset.baseLeft;
+      el.style.top = el.dataset.baseTop;
+
+      const rect = el.getBoundingClientRect();
+      let dx = 0;
+      let dy = 0;
+
+      if (rect.left < safeSide) dx = safeSide - rect.left;
+      if (rect.right > window.innerWidth - safeSide) dx = (window.innerWidth - safeSide) - rect.right;
+      if (rect.top < safeTop) dy = safeTop - rect.top;
+      if (rect.bottom > window.innerHeight - safeBottom) dy = (window.innerHeight - safeBottom) - rect.bottom;
+
+      if (dx || dy) {
+        el.style.left = rect.left + rect.width / 2 + dx + "px";
+        el.style.top = rect.top + rect.height / 2 + dy + "px";
       }
-      if (reduceMotion || !anchor) return;
+    });
+  }
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: anchor,
-          // Non-overlapping with this same anchor's floatword above: the
-          // word owns 92%->54%, this phrase owns 46%->6%, an 8-point
-          // gap between them so only one of the pair is ever visible.
-          start: "top 46%",
-          end: "top 6%",
-          scrub: true,
-          // hard kill-switch — see runHeroFlash's identical comment.
-          onLeave: () => gsap.set(phrase, { opacity: 0 }),
-          onLeaveBack: () => gsap.set(phrase, { opacity: 0 }),
-        },
+  clampFloatingText();
+
+  safeRun("winnerBanner", function () {
+    const banner = document.querySelector(".winner-banner");
+    if (!banner) return;
+    gsap.set(banner, {
+      opacity: 0,
+      y: 24,
+      scale: 0.9,
+      filter: "blur(10px)"
+    });
+    if (reduceMotion) return;
+
+    ScrollTrigger.create({
+      trigger: document.documentElement,
+      start: "top top",
+      end: "max",
+      onUpdate: (self) => {
+        const local = gsap.utils.clamp(0, 1, (self.progress - 0.9) / 0.1);
+        const eased = gsap.parseEase("power3.out")(local);
+        gsap.set(banner, {
+          opacity: local,
+          y: 24 * (1 - eased),
+          scale: 0.9 + eased * 0.1,
+          filter: "blur(" + ((1 - eased) * 10).toFixed(2) + "px)"
+        });
+      }
+    });
+  });
+
+  function setupScrollCarousel(rootSelector, itemSelector, opts) {
+    const root = document.querySelector(rootSelector);
+    if (!root) return;
+
+    const track = root.querySelector(rootSelector.indexOf("quote") !== -1 ? ".quote-carousel__track" : ".flags-carousel__track");
+    const viewport = root.querySelector(rootSelector.indexOf("quote") !== -1 ? ".quote-carousel__viewport" : ".flags-carousel__viewport");
+    const cards = Array.from(root.querySelectorAll(itemSelector));
+    if (!track || !cards.length || !viewport) return;
+
+    cards.forEach((card) => {
+      gsap.set(card, {
+        transformPerspective: 1600,
+        transformOrigin: "50% 50%"
+      });
+    });
+
+    function metrics() {
+      const viewportWidth = viewport.clientWidth;
+      const firstCard = cards[0];
+      const lastCard = cards[cards.length - 1];
+      const firstVisibleOffset = firstCard.offsetLeft + firstCard.offsetWidth * 0.32;
+      const lastVisibleOffset = lastCard.offsetLeft + lastCard.offsetWidth * 0.68;
+      return {
+        viewportWidth,
+        centerX: viewportWidth / 2,
+        startX: viewportWidth - firstVisibleOffset + opts.entryOffset,
+        endX: -lastVisibleOffset - opts.exitOffset,
+        trackYStart: opts.trackYStart,
+        trackYEnd: opts.trackYEnd,
+        trackRotateStart: opts.trackRotateStart,
+        trackRotateEnd: opts.trackRotateEnd
+      };
+    }
+
+    function renderByProgress(progress) {
+      const data = metrics();
+      const x = gsap.utils.interpolate(data.startX, data.endX, progress);
+      const y = gsap.utils.interpolate(data.trackYStart, data.trackYEnd, progress);
+      const rotateZ = gsap.utils.interpolate(data.trackRotateStart, data.trackRotateEnd, progress);
+
+      gsap.set(track, {
+        x,
+        y,
+        rotateZ,
+        rotateX: gsap.utils.interpolate(1.5, -1.5, progress)
       });
 
-      if (style === "slide") {
-        tl.to(phrase, { opacity: 1, x: 0, rotation: 0, filter: "blur(0px)", duration: 0.4, ease: "power2.out" }, 0)
-          .to(phrase, { opacity: 1, duration: 0.22 }, 0.4)
-          .to(phrase, { opacity: 0, x: 130 * side, rotation: 7 * side, filter: "blur(12px)", duration: 0.38, ease: "power2.in" }, 0.62);
-      } else {
-        tl.to(phrase, { opacity: 1, y: 0, skewY: 0, scale: 1, filter: "blur(0px)", duration: 0.4, ease: "power2.out" }, 0)
-          .to(phrase, { opacity: 1, duration: 0.22 }, 0.4)
-          .to(phrase, { opacity: 0, y: -26, skewY: -5, scale: 0.94, filter: "blur(12px)", duration: 0.38, ease: "power2.in" }, 0.62);
-      }
+      let activeIndex = 0;
+      let closest = Number.POSITIVE_INFINITY;
+
+      cards.forEach((card, cardIndex) => {
+        const cardCenter = card.offsetLeft + card.offsetWidth / 2 + x;
+        const delta = cardCenter - data.centerX;
+        const absDelta = Math.abs(delta);
+        if (absDelta < closest) {
+          closest = absDelta;
+          activeIndex = cardIndex;
+        }
+
+        const normalized = gsap.utils.clamp(-1, 1, delta / (data.viewportWidth * 0.56));
+        const centerPull = 1 - Math.min(1, Math.abs(normalized));
+        const scale = 0.82 + centerPull * 0.22;
+        const opacity = Math.min(1, 0.26 + centerPull * 0.82);
+        const blur = (1 - centerPull) * opts.maxBlur;
+
+        gsap.set(card, {
+          x: normalized * opts.sideDrift,
+          y: -normalized * opts.verticalArc,
+          z: centerPull * opts.depthBoost,
+          rotateY: -normalized * opts.rotateY,
+          rotateX: -normalized * opts.rotateX,
+          rotateZ: -normalized * opts.cardRotateZ,
+          scale,
+          opacity,
+          filter: "blur(" + blur.toFixed(2) + "px)"
+        });
+      });
+
+      cards.forEach((card, idx) => card.classList.toggle("is-active", idx === activeIndex));
+    }
+
+    if (reduceMotion) {
+      renderByProgress(0.5);
+      return;
+    }
+
+    const triggerRef = ScrollTrigger.create({
+      trigger: root,
+      start: "top bottom",
+      end: "bottom top",
+      scrub: true,
+      onUpdate: (self) => renderByProgress(self.progress)
+    });
+
+    renderByProgress(0.08);
+    window.addEventListener("resize", () => renderByProgress(triggerRef.progress));
+  }
+
+  safeRun("quoteCarousel", function () {
+    setupScrollCarousel(".quote-carousel", ".quote-card", {
+      entryOffset: 80,
+      exitOffset: 120,
+      trackYStart: -22,
+      trackYEnd: 24,
+      trackRotateStart: -3.5,
+      trackRotateEnd: 3.5,
+      sideDrift: -18,
+      verticalArc: 30,
+      depthBoost: 120,
+      rotateY: 30,
+      rotateX: 10,
+      cardRotateZ: 4,
+      maxBlur: 4.6
+    });
+  });
+
+  safeRun("flagsCarousel", function () {
+    setupScrollCarousel(".flags-carousel", ".flag-card", {
+      entryOffset: 60,
+      exitOffset: 100,
+      trackYStart: -26,
+      trackYEnd: 28,
+      trackRotateStart: -4.5,
+      trackRotateEnd: 4.5,
+      sideDrift: -20,
+      verticalArc: 24,
+      depthBoost: 108,
+      rotateY: 26,
+      rotateX: 8,
+      cardRotateZ: 3.5,
+      maxBlur: 4.2
     });
   });
 
@@ -925,6 +1338,7 @@
       if (refreshTimer) clearTimeout(refreshTimer);
       refreshTimer = setTimeout(() => {
         refreshTimer = null;
+        clampFloatingText();
         ScrollTrigger.refresh();
       }, delay || 120);
     }
