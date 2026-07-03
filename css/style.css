@@ -260,6 +260,7 @@ body.cursor-hover .cursor-ring{
   position: absolute;
   z-index: 1; /* same reasoning as .floatword — keeps its ::before fog
     scoped locally behind this phrase's own text */
+  isolation: isolate;
   left: 50%;
   transform: translate(-50%, -50%);
   max-width: min(20ch, 32vw);
@@ -294,33 +295,28 @@ body.cursor-hover .cursor-ring{
 .floatphrase::before{
   content:'';
   position: absolute;
-  inset: -0.85em -1.2em;
+  inset: -0.9em -1.25em;
   z-index: -1;
   border-radius: 999px;
   background:
-    radial-gradient(70% 78% at 18% 24%, rgba(6, 18, 34, 0.84), transparent 72%),
-    radial-gradient(72% 88% at 84% 72%, rgba(14, 14, 30, 0.78), transparent 74%),
-    linear-gradient(135deg, rgba(4, 8, 16, 0.72), rgba(6, 10, 18, 0.34));
-  box-shadow: 0 20px 56px rgba(0,0,0,0.32);
-  filter: blur(28px);
-  backdrop-filter: blur(18px) brightness(0.82) saturate(1.06);
-  -webkit-backdrop-filter: blur(18px) brightness(0.82) saturate(1.06);
-  -webkit-mask-image: radial-gradient(closest-side, black 50%, transparent 96%);
-  mask-image: radial-gradient(closest-side, black 50%, transparent 96%);
+    radial-gradient(56% 60% at 20% 28%, rgba(120, 230, 255, 0.18), transparent 68%),
+    radial-gradient(58% 62% at 78% 72%, rgba(186, 144, 255, 0.18), transparent 70%),
+    radial-gradient(46% 52% at 46% 54%, rgba(255, 176, 228, 0.12), transparent 72%);
+  opacity: 0.95;
+  filter: blur(26px);
+  pointer-events: none;
 }
 .floatphrase[data-family="sport"]::before{
   background:
-    radial-gradient(66% 72% at 22% 24%, rgba(6, 18, 34, 0.84), transparent 68%),
-    radial-gradient(64% 68% at 78% 74%, rgba(7, 28, 40, 0.78), transparent 72%),
-    radial-gradient(56% 56% at 26% 32%, rgba(34,211,238,0.28), transparent 70%),
-    linear-gradient(135deg, rgba(5, 10, 18, 0.74), rgba(6, 12, 20, 0.36));
+    radial-gradient(62% 68% at 22% 24%, rgba(120, 230, 255, 0.22), transparent 68%),
+    radial-gradient(58% 62% at 78% 74%, rgba(120, 168, 255, 0.16), transparent 72%),
+    radial-gradient(48% 52% at 28% 34%, rgba(255,255,255,0.08), transparent 72%);
 }
 .floatphrase[data-family="product"]::before{
   background:
-    radial-gradient(66% 72% at 20% 24%, rgba(12, 10, 24, 0.86), transparent 68%),
-    radial-gradient(64% 68% at 82% 74%, rgba(22, 10, 34, 0.8), transparent 72%),
-    radial-gradient(58% 58% at 28% 30%, rgba(244,114,182,0.26), transparent 72%),
-    linear-gradient(135deg, rgba(11, 8, 18, 0.76), rgba(8, 8, 18, 0.38));
+    radial-gradient(62% 68% at 20% 24%, rgba(255, 176, 228, 0.18), transparent 68%),
+    radial-gradient(58% 62% at 82% 74%, rgba(186, 144, 255, 0.2), transparent 72%),
+    radial-gradient(46% 50% at 30% 32%, rgba(255,255,255,0.08), transparent 72%);
 }
 .floatphrase--hero{
   max-width: min(18ch, 28vw);
@@ -333,9 +329,8 @@ body.cursor-hover .cursor-ring{
   padding: 0.55em 0.8em;
 }
 .floatphrase--ui::before{
-  inset: -0.45em -0.75em;
-  border-radius: 999px;
-  filter: blur(18px);
+  inset: -0.4em -0.65em;
+  filter: blur(16px);
 }
 @media (max-width: 720px){
   .floatphrase{
@@ -1217,7 +1212,7 @@ body.cursor-hover .cursor-ring{
 .flags-carousel{
   position: relative;
   padding: clamp(100px, 12vw, 160px) 0;
-  overflow: hidden;
+  overflow: visible;
 }
 .quote-carousel__wrap,
 .flags-carousel__wrap{
@@ -1248,17 +1243,17 @@ body.cursor-hover .cursor-ring{
 }
 .quote-carousel__viewport,
 .flags-carousel__viewport{
-  overflow: hidden;
+  overflow: visible;
   position: relative;
   perspective: 1400px;
   perspective-origin: 50% 40%;
-  padding: 28px 0 44px;
+  padding: 28px clamp(44px, 7vw, 110px) 44px;
 }
 .quote-carousel__track,
 .flags-carousel__track{
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: clamp(20px, 2.4vw, 34px);
   will-change: transform;
   transform-origin: 50% 50%;
   transform-style: preserve-3d;

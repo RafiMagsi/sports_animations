@@ -100,12 +100,12 @@
     layer.innerHTML = "";
 
     const distributed = [
-      { anchor: "#promo", copy: HERO_FLOAT_TEXTS[0], family: "hero", top: "16%", left: "68%" },
+      { anchor: "#promo", copy: PRODUCT_FLOAT_TEXTS[0], family: "product", top: "16%", left: "68%" },
       { anchor: "#gear", copy: SPORT_FLOAT_TEXTS[0], family: "sport", top: "24%", left: "72%" },
-      { anchor: "#numbers", copy: HERO_FLOAT_TEXTS[1], family: "hero", top: "76%", left: "27%" },
+      { anchor: "#numbers", copy: SPORT_FLOAT_TEXTS[7], family: "sport", top: "76%", left: "27%" },
       { anchor: "#training", copy: PRODUCT_FLOAT_TEXTS[4], family: "product", top: "24%", left: "73%" },
-      { anchor: "#match", copy: SPORT_FLOAT_TEXTS[4], family: "sport", top: "72%", left: "28%" },
-      { anchor: "#fan", copy: HERO_FLOAT_TEXTS[2], family: "hero", top: "24%", left: "72%" },
+      { anchor: "#match", copy: SPORT_FLOAT_TEXTS[4], family: "sport", top: "72%", left: "60%" },
+      { anchor: "#fan", copy: PRODUCT_FLOAT_TEXTS[21], family: "product", top: "24%", left: "72%" },
       { anchor: "#news", copy: PRODUCT_FLOAT_TEXTS[20], family: "product", top: "70%", left: "28%" },
       { anchor: "#community", copy: SPORT_FLOAT_TEXTS[24], family: "sport", top: "22%", left: "73%" },
       { anchor: ".statement", copy: "Build Your Football Legacy.", family: "product", top: "74%", left: "31%" },
@@ -1020,15 +1020,12 @@
 
     function metrics() {
       const viewportWidth = viewport.clientWidth;
-      const firstCard = cards[0];
-      const lastCard = cards[cards.length - 1];
-      const firstVisibleOffset = firstCard.offsetLeft + firstCard.offsetWidth * 0.32;
-      const lastVisibleOffset = lastCard.offsetLeft + lastCard.offsetWidth * 0.68;
+      const travel = Math.max(0, track.scrollWidth - viewportWidth);
       return {
         viewportWidth,
         centerX: viewportWidth / 2,
-        startX: viewportWidth - firstVisibleOffset + opts.entryOffset,
-        endX: -lastVisibleOffset - opts.exitOffset,
+        startX: viewportWidth * 0.62,
+        endX: -(travel + viewportWidth * 0.18),
         trackYStart: opts.trackYStart,
         trackYEnd: opts.trackYEnd,
         trackRotateStart: opts.trackRotateStart,
@@ -1046,7 +1043,7 @@
         x,
         y,
         rotateZ,
-        rotateX: gsap.utils.interpolate(1.5, -1.5, progress)
+        rotateX: 0
       });
 
       let activeIndex = 0;
@@ -1069,10 +1066,10 @@
 
         gsap.set(card, {
           x: normalized * opts.sideDrift,
-          y: -normalized * opts.verticalArc,
+          y: 0,
           z: centerPull * opts.depthBoost,
           rotateY: -normalized * opts.rotateY,
-          rotateX: -normalized * opts.rotateX,
+          rotateX: 0,
           rotateZ: -normalized * opts.cardRotateZ,
           scale,
           opacity,
@@ -1096,7 +1093,7 @@
       onUpdate: (self) => renderByProgress(self.progress)
     });
 
-    renderByProgress(0.08);
+    renderByProgress(0);
     window.addEventListener("resize", () => renderByProgress(triggerRef.progress));
   }
 
@@ -1104,15 +1101,15 @@
     setupScrollCarousel(".quote-carousel", ".quote-card", {
       entryOffset: 80,
       exitOffset: 120,
-      trackYStart: -22,
-      trackYEnd: 24,
-      trackRotateStart: -3.5,
-      trackRotateEnd: 3.5,
+      trackYStart: 0,
+      trackYEnd: 0,
+      trackRotateStart: 0,
+      trackRotateEnd: 0,
       sideDrift: -18,
-      verticalArc: 30,
+      verticalArc: 0,
       depthBoost: 120,
       rotateY: 30,
-      rotateX: 10,
+      rotateX: 0,
       cardRotateZ: 4,
       maxBlur: 4.6
     });
@@ -1122,17 +1119,70 @@
     setupScrollCarousel(".flags-carousel", ".flag-card", {
       entryOffset: 60,
       exitOffset: 100,
-      trackYStart: -26,
-      trackYEnd: 28,
-      trackRotateStart: -4.5,
-      trackRotateEnd: 4.5,
+      trackYStart: 0,
+      trackYEnd: 0,
+      trackRotateStart: 0,
+      trackRotateEnd: 0,
       sideDrift: -20,
-      verticalArc: 24,
+      verticalArc: 0,
       depthBoost: 108,
       rotateY: 26,
-      rotateX: 8,
+      rotateX: 0,
       cardRotateZ: 3.5,
       maxBlur: 4.2
+    });
+  });
+
+  safeRun("carouselHeaders", function () {
+    [
+      { root: ".quote-carousel", header: ".quote-carousel__header" },
+      { root: ".flags-carousel", header: ".flags-carousel__header" }
+    ].forEach((item) => {
+      const root = document.querySelector(item.root);
+      const header = document.querySelector(item.header);
+      if (!root || !header) return;
+
+      gsap.set(header, { xPercent: 16, y: 0, opacity: 0.42, filter: "blur(8px)" });
+      if (reduceMotion) {
+        gsap.set(header, { xPercent: 0, opacity: 1, filter: "none" });
+        return;
+      }
+
+      gsap.to(header, {
+        xPercent: -18,
+        y: 0,
+        opacity: 1,
+        filter: "blur(0px)",
+        ease: "none",
+        scrollTrigger: {
+          trigger: root,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true
+        }
+      });
+    });
+  });
+
+  safeRun("seasonChipDrift", function () {
+    const chip = document.querySelector(".hero__season-chip");
+    const hero = document.querySelector(".hero");
+    if (!chip || !hero) return;
+
+    if (reduceMotion) {
+      gsap.set(chip, { xPercent: 0 });
+      return;
+    }
+
+    gsap.to(chip, {
+      xPercent: -42,
+      ease: "none",
+      scrollTrigger: {
+        trigger: hero,
+        start: "top bottom",
+        end: "bottom top",
+        scrub: true
+      }
     });
   });
 
