@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PULSE — The Football, Engineered</title>
+<meta name="description" content="PULSE is a football built for touch, control and flight. Scroll to take it apart, feature by feature.">
+
+<!-- Social preview: og-image.jpg isn't included yet (needs a real
+     screenshot, which this build process can't generate) — drop one
+     at assets/og-image.jpg (1200x630 recommended) and this tag picks
+     it up automatically, no other changes needed. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="PULSE — The Football, Engineered">
+<meta property="og:description" content="A football built for touch, control and flight. Scroll to take it apart, feature by feature.">
+<meta property="og:image" content="assets/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PULSE — The Football, Engineered">
+<meta name="twitter:description" content="A football built for touch, control and flight. Scroll to take it apart, feature by feature.">
+<meta name="twitter:image" content="assets/og-image.jpg">
+
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Custom cursor -->
+<canvas class="cursor-glitter"></canvas>
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- Preloader -->
+<div class="preloader">
+  <div class="preloader__mark">PULSE<span class="holo-text">.</span></div>
+  <div class="preloader__bar"><div class="preloader__fill"></div></div>
+  <div class="preloader__pct">00%</div>
+</div>
+
+<!-- ============ FIXED VIDEO BACKGROUND — the site's ONE visual ============ -->
+<!-- Scroll is the playhead: every scroll tick seeks the hidden <video> and
+     redraws the exact decoded frame onto the canvas. Direct, linear,
+     no loop — top of the page is frame 0, bottom is the last frame.
+
+     SOURCE ORDER: the browser tries the local file first
+     (assets/video/background.mp4). That path doesn't have a real file in
+     it yet — drop your own clip there (any name, just keep the filename
+     "background.mp4") and it takes over automatically, no code changes.
+     Until then, it falls through to the hotlinked placeholder clip below
+     so the site works today. -->
+<div class="bg-video">
+  <video class="bg-video__src" muted playsinline preload="auto" tabindex="-1">
+    <source src="assets/video/background.mp4" type="video/mp4">
+    <source src="https://videos.pexels.com/video-files/31472390/13423986_2560_1440_24fps.mp4" type="video/mp4">
+  </video>
+  <canvas class="bg-video__canvas"></canvas>
+  <div class="bg-video__scrim"></div>
+  <div class="bg-video__grain"></div>
+</div>
+
+<!-- Nav -->
+<header class="nav">
+  <a href="#hero" class="nav__logo">PULSE<span>.</span></a>
+  <nav class="nav__links">
+    <a href="#galaxy">Global</a>
+    <a href="#pitch">The Touch</a>
+    <a href="#build">The Build</a>
+    <a href="#join">Join</a>
+  </nav>
+  <button class="nav__sound" type="button" aria-label="Toggle sound" aria-pressed="false">
+    <svg class="nav__sound-on" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>
+    <svg class="nav__sound-off" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
+  <div class="nav__progress"><div class="nav__progress-fill"></div></div>
+</header>
+
+<main>
+
+  <!-- ============ HERO — introduce the product ============ -->
+  <section class="hero" id="hero">
+    <div class="hero__content">
+      <div class="hero__eyebrow" style="opacity:0; transform: translateY(14px);">Introducing Pulse</div>
+      <h1 class="hero__title display">
+        <span class="line"><span>FEEL EVERY</span></span>
+        <span class="line"><span>TOUCH</span></span>
+        <span class="line line--accent"><span>ENGINEERED</span></span>
+      </h1>
+      <div class="hero__foot">
+        <p class="hero__desc">There's no play button. Scroll to take PULSE apart, feature by feature — you're the one driving the reveal.</p>
+        <div class="hero__scroll">
+          <span>Scroll</span>
+          <div class="hero__scroll-line"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GALAXY — the product's reach, not a spectator's ============ -->
+  <section class="galaxy" id="galaxy">
+    <canvas class="galaxy__canvas"></canvas>
+    <!-- Blurred, darkened corners (center stays untouched/sharp) —
+         boosts contrast so the gathering particles read clearly
+         against the video instead of competing with it. Fades in as
+         the section arrives and fades back out as it leaves, tied to
+         the same scroll range as the gather itself. -->
+    <div class="galaxy__vignette"></div>
+    <div class="galaxy__index">01 / 04</div>
+    <div class="galaxy__content wrap">
+      <div class="eyebrow galaxy__eyebrow">Built For Anywhere</div>
+      <h2 class="galaxy__title display">One ball.<br><em>Every</em> surface.</h2>
+      <p class="galaxy__sub">Concrete, clay, wet grass, dry grass — PULSE performs the same, pitch after pitch, city after city.</p>
+    </div>
+  </section>
+
+  <!-- ============ MARQUEE — product trust bar, not hype words ============ -->
+  <div class="marquee">
+    <div class="marquee__track">
+      <span><em>✦</em>FIFA QUALITY PRO<em>✦</em>32 HAND-STITCHED PANELS<em>✦</em>FLIGHT-TESTED<em>✦</em>ALL-WEATHER GRIP<em>✦</em></span>
+    </div>
+  </div>
+
+  <!-- ============ FEATURE 01 — THE TOUCH (product feature: control) ============ -->
+  <section class="feature" id="pitch">
+    <canvas class="feature__ambient"></canvas>
+    <div class="feature__index">02 / 04</div>
+    <div class="wrap feature__wrap">
+      <div class="eyebrow">Feature — Control</div>
+      <h2 class="feature__title display">Touch tuned<br>to the<br><span class="holo-text">millimeter.</span></h2>
+      <p class="feature__body">The surface geometry isn't decoration. Every seam and panel is placed to keep contact predictable — first touch to final strike, on any surface, in any weather.</p>
+      <ul class="feature__list">
+        <li><b>01</b> Consistent rebound off any surface</li>
+        <li><b>02</b> Seam pattern engineered for a true roll</li>
+        <li><b>03</b> Weight-balanced core, strike after strike</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ STATS — product specs ============ -->
+  <section class="stats" id="numbers">
+    <div class="wrap">
+      <div class="stats__intro">
+        <div class="eyebrow">By The Numbers</div>
+        <h2 class="feature__title display">Specs that<br>speak for<br>themselves.</h2>
+      </div>
+      <div class="stats__grid">
+        <div class="stat">
+          <div class="stat__num" data-value="32" data-suffix=""><span class="num-value">0</span><small>PANELS</small></div>
+          <div class="stat__label">Hand-stitched, seam-sealed construction</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num" data-value="410" data-suffix=""><span class="num-value">0</span><small>G</small></div>
+          <div class="stat__label">Tournament-standard weight, every unit</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num" data-value="68" data-suffix=""><span class="num-value">0</span><small>CM</small></div>
+          <div class="stat__label">Regulation circumference, FIFA spec</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num" data-value="100" data-suffix="%"><span class="num-value">0</span><small>FLIGHT</small></div>
+          <div class="stat__label">Consistency, strike to strike</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURE 02 — THE BUILD (product feature: durability) ============ -->
+  <section class="feature feature--reverse" id="build">
+    <canvas class="feature__ambient"></canvas>
+    <div class="feature__index">03 / 04</div>
+    <div class="wrap feature__wrap">
+      <div class="eyebrow">Feature — Durability</div>
+      <h2 class="feature__title display">Built to<br>outlast<br><span class="holo-text">the match.</span></h2>
+      <p class="feature__body">A water-resistant shell, reinforced stitching at every stress point, and a core that holds its shape under repeated full-power strikes — tested well past ninety minutes.</p>
+      <ul class="feature__list">
+        <li><b>04</b> Weatherproof shell, wet or dry</li>
+        <li><b>05</b> Reinforced seams at every stress point</li>
+        <li><b>06</b> Shape-retention core, match after match</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ STATEMENT — product manifesto ============ -->
+  <section class="statement">
+    <div class="wrap">
+      <p class="statement__text">A football is not just leather and air. It's the difference between a strike that finds the net <span class="accent">and</span> one that doesn't — and that difference is built in, not left to chance.</p>
+    </div>
+  </section>
+
+  <!-- ============ CTA — the ask ============ -->
+  <section class="cta" id="join">
+    <canvas class="cta__sparkles"></canvas>
+    <div class="wrap cta__content">
+      <div class="eyebrow" style="justify-content:center;">04 / 04 — Available Now</div>
+      <h2 class="cta__title display">Don't just<br>play. <span>Own it.</span></h2>
+      <a href="#hero" class="btn">Get Pulse</a>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer__logo">PULSE<span>.</span></div>
+      <ul class="footer__links" style="display:flex;">
+        <li><a href="#galaxy">Global</a></li>
+        <li><a href="#pitch">The Touch</a></li>
+        <li><a href="#build">The Build</a></li>
+      </ul>
+      <div class="footer__meta">© 2026 PULSE — Precision football, engineered.</div>
+      <div class="footer__credit">Design &amp; build — <a href="mailto:mrafi.stonixtech@gmail.com">DropTicks AI</a>, available for projects</div>
+    </div>
+  </footer>
+
+</main>
+
+<!-- Vendored libraries (self-contained, no external CDN needed) -->
+<script src="vendor/lenis.min.js"></script>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<script src="vendor/SplitText.min.js"></script>
+<script src="vendor/three.global.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/effects.js"></script>
+</body>
+</html>
