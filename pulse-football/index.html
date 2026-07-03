@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PULSE — The Football, Engineered</title>
-<meta name="description" content="PULSE is a football built for touch, control and flight. Scroll to take it apart, feature by feature.">
+<title>Zen Football — The Football, Engineered</title>
+<meta name="description" content="Zen Football is built for touch, control and flight. Scroll to take it apart, feature by feature.">
 
 <!-- Social preview: og-image.jpg isn't included yet (needs a real
      screenshot, which this build process can't generate) — drop one
      at assets/og-image.jpg (1200x630 recommended) and this tag picks
      it up automatically, no other changes needed. -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="PULSE — The Football, Engineered">
+<meta property="og:title" content="Zen Football — The Football, Engineered">
 <meta property="og:description" content="A football built for touch, control and flight. Scroll to take it apart, feature by feature.">
 <meta property="og:image" content="assets/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="PULSE — The Football, Engineered">
+<meta name="twitter:title" content="Zen Football — The Football, Engineered">
 <meta name="twitter:description" content="A football built for touch, control and flight. Scroll to take it apart, feature by feature.">
 <meta name="twitter:image" content="assets/og-image.jpg">
 
@@ -23,7 +23,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -36,7 +36,7 @@
 
 <!-- Preloader -->
 <div class="preloader">
-  <div class="preloader__mark">PULSE<span class="holo-text">.</span></div>
+  <div class="preloader__mark">ZEN FOOTBALL<span class="holo-text">.</span></div>
   <div class="preloader__bar"><div class="preloader__fill"></div></div>
   <div class="preloader__pct">00%</div>
 </div>
@@ -64,11 +64,11 @@
 
 <!-- Nav -->
 <header class="nav">
-  <a href="#hero" class="nav__logo">PULSE<span>.</span></a>
+  <a href="#hero" class="nav__logo">ZEN FOOTBALL<span>.</span></a>
   <nav class="nav__links">
-    <a href="#galaxy">Global</a>
-    <a href="#pitch">The Touch</a>
-    <a href="#build">The Build</a>
+    <a href="#gear">Gear</a>
+    <a href="#training">Training</a>
+    <a href="#fan">Fan Collection</a>
     <a href="#join">Join</a>
   </nav>
   <button class="nav__sound" type="button" aria-label="Toggle sound" aria-pressed="false">
@@ -78,29 +78,101 @@
   <div class="nav__progress"><div class="nav__progress-fill"></div></div>
 </header>
 
+<!-- ============ FLOATING WORD REVEALS — not normal scrolling text. Each
+     word sits fixed over the whole page (not inside any one section),
+     invisible until its own section scrolls near, then it glows into
+     view, holds, and dissolves back out — see main.js's floating-word
+     timeline and effects.js's setupFloatingSmoke for the drifting haze
+     behind them. Depth is faked with size + blur, not real 3D. ============ -->
+<div class="floatwords" aria-hidden="true">
+  <canvas class="floatwords__smoke"></canvas>
+  <span class="floatword" data-depth="near" style="top:10%; left:8%;">Speed</span>
+  <span class="floatword" data-depth="far" style="top:14%; left:90%;">Power</span>
+  <span class="floatword" data-depth="mid" style="top:50%; left:5%;">Control</span>
+  <span class="floatword" data-depth="near" style="top:88%; left:18%;">Precision</span>
+  <span class="floatword" data-depth="far" style="top:8%; left:50%;">Teamwork</span>
+  <span class="floatword" data-depth="mid" style="top:52%; left:92%;">Passion</span>
+  <span class="floatword" data-depth="near" style="top:90%; left:78%;">Discipline</span>
+  <span class="floatword" data-depth="far" style="top:20%; left:72%;">Performance</span>
+  <span class="floatword" data-depth="mid" style="top:86%; left:48%;">Confidence</span>
+  <span class="floatword" data-depth="near" style="top:35%; left:8%;">Victory</span>
+
+  <!-- second floating layer: longer sport/product phrases, each tied to
+       the SAME section anchors as the words above but a later
+       sub-window of that section's own scroll transit, and each using
+       one of two different animation recipes (drift-skew / side-slide)
+       for variety instead of every floating text moving identically —
+       see main.js's runFloatPhrases. -->
+  <p class="floatphrase" data-anchor="#promo" data-style="drift" style="top:14%;">Gear up for World Cup Season 2026.</p>
+  <p class="floatphrase" data-anchor="#gear" data-style="slide" data-side="left" style="top:86%;">Engineered for players who demand more from every match.</p>
+  <p class="floatphrase" data-anchor="#numbers" data-style="drift" style="top:14%;">Built to handle every challenge on the pitch.</p>
+  <p class="floatphrase" data-anchor="#training" data-style="slide" data-side="right" style="top:86%;">Football rewards those who keep training when nobody is watching.</p>
+  <p class="floatphrase" data-anchor="#match" data-style="drift" style="top:14%;">The difference between winning and losing is often one decision.</p>
+  <p class="floatphrase" data-anchor="#fan" data-style="slide" data-side="left" style="top:86%;">Join millions of fans celebrating the world's game.</p>
+  <p class="floatphrase" data-anchor="#news" data-style="drift" style="top:14%;">Every match is a chance to make history.</p>
+  <p class="floatphrase" data-anchor="#community" data-style="slide" data-side="right" style="top:86%;">Great teams move together as one.</p>
+  <p class="floatphrase" data-anchor=".statement" data-style="drift" style="top:14%;">Leave your mark on the game.</p>
+  <p class="floatphrase" data-anchor="#join" data-style="slide" data-side="left" style="top:86%;">The future of football belongs to those who never stop improving.</p>
+</div>
+
 <main>
 
-  <!-- ============ HERO — introduce the product ============ -->
+  <!-- ============ INTRO — dark cover: scattered particles gather into
+       a continuously-swirling galaxy, ZEN FOOTBALL reveals in the middle, then
+       the particles shift from a cool neutral tone into the brand's
+       holo colors ("football glitters") before fading out as the real
+       video background fades in underneath. Never stops moving — the
+       swirl keeps spinning even once gathered, same idle-rotation
+       technique as the later Galaxy section. ============ -->
+  <section class="intro" id="intro">
+    <canvas class="intro__canvas"></canvas>
+    <div class="intro__word display">ZEN FOOTBALL<span>.</span></div>
+    <div class="intro__hint">Scroll to enter</div>
+  </section>
+
+  <!-- ============ HERO — introduce the brand. The eyebrow line is gone;
+       in its place a quick floating title-card sequence plays as the
+       section rises into view (see main.js's runHeroFlash) — each line
+       blurs into focus, glows, and dissolves before the next one
+       arrives, landing on the persistent "FUTURE OF FOOTBALL..." title
+       exactly as the section settles. Not scrolling text: every line
+       here is positioned/timed the same floating way as the Speed/
+       Power word reveals, just scoped to hero's own approach instead
+       of scattered page-wide. ============ -->
   <section class="hero" id="hero">
+    <div class="hero__flash" aria-hidden="true">
+      <span class="hero__flash-line">The crowd is waiting.</span>
+      <span class="hero__flash-line">The lights are on.</span>
+      <span class="hero__flash-line">The world is watching.</span>
+      <span class="hero__flash-line">Train with purpose.</span>
+      <span class="hero__flash-line">Compete with confidence.</span>
+      <span class="hero__flash-line">Play with passion.</span>
+      <span class="hero__flash-line">Create history.</span>
+      <span class="hero__flash-line">Road to World Cup 2026.</span>
+    </div>
     <div class="hero__content">
-      <div class="hero__eyebrow" style="opacity:0; transform: translateY(14px);">Introducing Pulse</div>
       <h1 class="hero__title display">
-        <span class="line"><span>FEEL EVERY</span></span>
-        <span class="line"><span>TOUCH</span></span>
-        <span class="line line--accent"><span>ENGINEERED</span></span>
+        <span class="line"><span>THE FUTURE OF</span></span>
+        <span class="line"><span>FOOTBALL STARTS</span></span>
+        <span class="line line--accent"><span>HERE</span></span>
       </h1>
       <div class="hero__foot">
-        <p class="hero__desc">There's no play button. Scroll to take PULSE apart, feature by feature — you're the one driving the reveal.</p>
-        <div class="hero__scroll">
-          <span>Scroll</span>
-          <div class="hero__scroll-line"></div>
+        <p class="hero__desc">Gear up for the 2026 World Cup season with premium football gear, training programs, and fan collections.</p>
+        <div class="hero__cta-row">
+          <a href="#gear" class="btn">Explore Collection</a>
+          <div class="hero__scroll">
+            <span>Scroll</span>
+            <div class="hero__scroll-line"></div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ============ GALAXY — the product's reach, not a spectator's ============ -->
-  <section class="galaxy" id="galaxy">
+  <!-- ============ SPECIAL PROMO — repurposes the galaxy particle-converge
+       visual as a backdrop; not one of the 7 numbered sections, so it
+       carries no index badge (same treatment as the hero). ============ -->
+  <section class="galaxy" id="promo">
     <canvas class="galaxy__canvas"></canvas>
     <!-- Blurred, darkened corners (center stays untouched/sharp) —
          boosts contrast so the gathering particles read clearly
@@ -108,29 +180,22 @@
          the section arrives and fades back out as it leaves, tied to
          the same scroll range as the gather itself. -->
     <div class="galaxy__vignette"></div>
-    <div class="galaxy__index">01 / 04</div>
     <div class="galaxy__content wrap">
-      <div class="eyebrow galaxy__eyebrow">Built For Anywhere</div>
-      <h2 class="galaxy__title display">One ball.<br><em>Every</em> surface.</h2>
-      <p class="galaxy__sub">Concrete, clay, wet grass, dry grass — PULSE performs the same, pitch after pitch, city after city.</p>
+      <div class="eyebrow galaxy__eyebrow">Limited-Time Offer</div>
+      <h2 class="galaxy__title display">World Cup Season<br><em>2026</em> Collection.</h2>
+      <p class="galaxy__sub">Up to 40% off selected football gear — while the collection lasts.</p>
+      <a href="#gear" class="btn galaxy__cta">Claim Offer</a>
     </div>
   </section>
 
-  <!-- ============ MARQUEE — product trust bar, not hype words ============ -->
-  <div class="marquee">
-    <div class="marquee__track">
-      <span><em>✦</em>FIFA QUALITY PRO<em>✦</em>32 HAND-STITCHED PANELS<em>✦</em>FLIGHT-TESTED<em>✦</em>ALL-WEATHER GRIP<em>✦</em></span>
-    </div>
-  </div>
-
-  <!-- ============ FEATURE 01 — THE TOUCH (product feature: control) ============ -->
-  <section class="feature" id="pitch">
+  <!-- ============ SECTION 1 — PREMIUM FOOTBALL GEAR ============ -->
+  <section class="feature" id="gear">
     <canvas class="feature__ambient"></canvas>
-    <div class="feature__index">02 / 04</div>
+    <div class="feature__index">01 / 07</div>
     <div class="wrap feature__wrap">
-      <div class="eyebrow">Feature — Control</div>
-      <h2 class="feature__title display">Touch tuned<br>to the<br><span class="holo-text">millimeter.</span></h2>
-      <p class="feature__body">The surface geometry isn't decoration. Every seam and panel is placed to keep contact predictable — first touch to final strike, on any surface, in any weather.</p>
+      <div class="eyebrow">01 — Premium Football Gear</div>
+      <h2 class="feature__title display">Gear built<br>to <span class="holo-text">win.</span></h2>
+      <p class="feature__body">From match balls to boots and training kits — every piece is chosen for performance, durability, and feel. Gear that keeps up with the game, whatever level you play.</p>
       <ul class="feature__list">
         <li><b>01</b> Consistent rebound off any surface</li>
         <li><b>02</b> Seam pattern engineered for a true roll</li>
@@ -157,7 +222,7 @@
         </div>
         <div class="stat">
           <div class="stat__num" data-value="68" data-suffix=""><span class="num-value">0</span><small>CM</small></div>
-          <div class="stat__label">Regulation circumference, FIFA spec</div>
+          <div class="stat__label">Regulation circumference, tournament spec</div>
         </div>
         <div class="stat">
           <div class="stat__num" data-value="100" data-suffix="%"><span class="num-value">0</span><small>FLIGHT</small></div>
@@ -167,49 +232,117 @@
     </div>
   </section>
 
-  <!-- ============ FEATURE 02 — THE BUILD (product feature: durability) ============ -->
-  <section class="feature feature--reverse" id="build">
+  <!-- ============ SECTION 2 — TRAINING ACADEMY ============ -->
+  <section class="feature feature--reverse" id="training">
     <canvas class="feature__ambient"></canvas>
-    <div class="feature__index">03 / 04</div>
+    <div class="feature__index">02 / 07</div>
     <div class="wrap feature__wrap">
-      <div class="eyebrow">Feature — Durability</div>
-      <h2 class="feature__title display">Built to<br>outlast<br><span class="holo-text">the match.</span></h2>
-      <p class="feature__body">A water-resistant shell, reinforced stitching at every stress point, and a core that holds its shape under repeated full-power strikes — tested well past ninety minutes.</p>
+      <div class="eyebrow">02 — Training Academy</div>
+      <h2 class="feature__title display">Train like<br>a pro,<br><span class="holo-text">every session.</span></h2>
+      <p class="feature__body">Structured drills, skill progressions, and pro-level coaching frameworks — built for players who want to get better every time they step on the pitch.</p>
       <ul class="feature__list">
-        <li><b>04</b> Weatherproof shell, wet or dry</li>
-        <li><b>05</b> Reinforced seams at every stress point</li>
-        <li><b>06</b> Shape-retention core, match after match</li>
+        <li><b>04</b> Personalized training plans for every position</li>
+        <li><b>05</b> Video-guided drills from pro coaches</li>
+        <li><b>06</b> Progress tracking, session after session</li>
       </ul>
     </div>
   </section>
 
-  <!-- ============ STATEMENT — product manifesto ============ -->
+  <!-- ============ SECTION 3 — MATCH ANALYSIS ============ -->
+  <section class="feature" id="match">
+    <canvas class="feature__ambient"></canvas>
+    <div class="feature__index">03 / 07</div>
+    <div class="wrap feature__wrap">
+      <div class="eyebrow">03 — Match Analysis</div>
+      <h2 class="feature__title display">Every match.<br>Every stat,<br><span class="holo-text">broken down.</span></h2>
+      <p class="feature__body">Deep-dive breakdowns of every tournament fixture — heat maps, key moments, and tactical insight, built for fans who want more than the final score.</p>
+      <ul class="feature__list">
+        <li><b>07</b> Live match stats and tactical breakdowns</li>
+        <li><b>08</b> Player performance heat maps</li>
+        <li><b>09</b> Post-match highlight analysis</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ SECTION 4 — FAN COLLECTION ============ -->
+  <section class="feature feature--reverse" id="fan">
+    <canvas class="feature__ambient"></canvas>
+    <div class="feature__index">04 / 07</div>
+    <div class="wrap feature__wrap">
+      <div class="eyebrow">04 — Fan Collection</div>
+      <h2 class="feature__title display">Wear your<br>colors<br><span class="holo-text">with pride.</span></h2>
+      <p class="feature__body">Jerseys, scarves, and matchday essentials for every team in the tournament — fan gear built for the stands and the street.</p>
+      <ul class="feature__list">
+        <li><b>10</b> Team jerseys for every squad in the tournament</li>
+        <li><b>11</b> Limited matchday drops</li>
+        <li><b>12</b> Fan-first pricing on core essentials</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ SECTION 5 — WORLD CUP NEWS HUB ============ -->
+  <section class="feature" id="news">
+    <canvas class="feature__ambient"></canvas>
+    <div class="feature__index">05 / 07</div>
+    <div class="wrap feature__wrap">
+      <div class="eyebrow">05 — World Cup News Hub</div>
+      <h2 class="feature__title display">Stay ahead<br>of every<br><span class="holo-text">headline.</span></h2>
+      <p class="feature__body">Draw updates, host city coverage, and ticket news — everything happening around the tournament, in one place.</p>
+      <ul class="feature__list">
+        <li><b>13</b> Groups confirmed — full draw breakdown</li>
+        <li><b>14</b> Host cities announced across the region</li>
+        <li><b>15</b> Ticket phase two opens next month</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ SECTION 6 — COMMUNITY & EVENTS ============ -->
+  <section class="feature feature--reverse" id="community">
+    <canvas class="feature__ambient"></canvas>
+    <div class="feature__index">06 / 07</div>
+    <div class="wrap feature__wrap">
+      <div class="eyebrow">06 — Community & Events</div>
+      <h2 class="feature__title display">Join the<br>movement,<br><span class="holo-text">on and off the pitch.</span></h2>
+      <p class="feature__body">Watch parties, grassroots tournaments, and fan meetups — built for a community that lives football every day of the year, not just matchday.</p>
+      <ul class="feature__list">
+        <li><b>16</b> Local watch parties every matchday</li>
+        <li><b>17</b> Grassroots tournaments for all ages</li>
+        <li><b>18</b> Exclusive community meetups & events</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ STATEMENT — brand manifesto ============ -->
   <section class="statement">
     <div class="wrap">
       <p class="statement__text">A football is not just leather and air. It's the difference between a strike that finds the net <span class="accent">and</span> one that doesn't — and that difference is built in, not left to chance.</p>
     </div>
   </section>
 
-  <!-- ============ CTA — the ask ============ -->
+  <!-- ============ SECTION 7 — CONTACT / JOIN NOW (final CTA) ============ -->
   <section class="cta" id="join">
     <canvas class="cta__sparkles"></canvas>
     <div class="wrap cta__content">
-      <div class="eyebrow" style="justify-content:center;">04 / 04 — Available Now</div>
-      <h2 class="cta__title display">Don't just<br>play. <span>Own it.</span></h2>
-      <a href="#hero" class="btn">Get Pulse</a>
+      <div class="eyebrow" style="justify-content:center;">07 / 07 — Contact / Join Now</div>
+      <h2 class="cta__title display">Build your<br>football <span>legacy.</span></h2>
+      <p class="cta__sub">Join the World Cup Season 2026 football movement.</p>
+      <a href="#hero" class="btn">Join Now</a>
     </div>
   </section>
 
   <!-- ============ FOOTER ============ -->
   <footer class="footer">
     <div class="wrap">
-      <div class="footer__logo">PULSE<span>.</span></div>
+      <div class="footer__logo">ZEN FOOTBALL<span>.</span></div>
       <ul class="footer__links" style="display:flex;">
-        <li><a href="#galaxy">Global</a></li>
-        <li><a href="#pitch">The Touch</a></li>
-        <li><a href="#build">The Build</a></li>
+        <li><a href="#gear">Gear</a></li>
+        <li><a href="#training">Training</a></li>
+        <li><a href="#match">Match Analysis</a></li>
+        <li><a href="#fan">Fan Collection</a></li>
+        <li><a href="#news">News Hub</a></li>
+        <li><a href="#community">Community</a></li>
       </ul>
-      <div class="footer__meta">© 2026 PULSE — Precision football, engineered.</div>
+      <div class="footer__meta">© 2026 Zen Football — Precision football, engineered.</div>
       <div class="footer__credit">Design &amp; build — <a href="mailto:mrafi.stonixtech@gmail.com">DropTicks AI</a>, available for projects</div>
     </div>
   </footer>

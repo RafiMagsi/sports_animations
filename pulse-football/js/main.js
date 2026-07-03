@@ -1,10 +1,26 @@
 /* =========================================================
-   PULSE — main.js
+   ZEN FOOTBALL — main.js
    Lenis smooth scroll + GSAP ScrollTrigger driven animations
    ========================================================= */
 
 (function () {
   "use strict";
+
+  // HARD FAILSAFE — completely independent of GSAP/ScrollTrigger/
+  // SplitText or anything below. If any of those fail to load, or if
+  // any script error happens anywhere during setup, this plain
+  // setTimeout still fires and forces the preloader out of the way so
+  // a visitor is never permanently stuck looking at "00%". This is the
+  // one thing on the page that cannot be broken by a bug elsewhere.
+  window.setTimeout(function () {
+    var p = document.querySelector(".preloader");
+    if (p && p.style.display !== "none") {
+      p.style.display = "none";
+      document.body.classList.add("is-ready");
+    }
+  }, 4000);
+
+  try {
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const isTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
@@ -25,28 +41,51 @@
     opts = opts || {};
     const rise = opts.y != null ? opts.y : 30;
     const stagger = opts.stagger || 0;
+    // three visibly different "modern" recipes instead of one flat
+    // fade+rise everywhere — tilt (a 3D tip-up out of the video, like
+    // the text has real thickness), punch (scales in from small with a
+    // springy overshoot), swing (rotates in off-axis then settles) —
+    // picked per call so nearby sections don't all move identically
+    const variant = opts.variant || "tilt";
+
     gsap.utils.toArray(targets).forEach((el, i) => {
-      gsap.fromTo(
-        el,
-        { opacity: 0, y: rise, filter: "blur(6px)" },
-        {
-          opacity: 1,
-          y: 0,
-          filter: "blur(0px)",
-          ease: "none",
-          scrollTrigger: {
-            trigger: el,
-            start: `top ${95 - stagger * i * 40}%`,
-            end: "top 55%",
-            scrub: true,
-          },
-        }
-      );
+      let fromVars, toVars, exitVars, entranceEase;
+
+      if (variant === "punch") {
+        fromVars = { opacity: 0, y: rise * 0.4, scale: 0.62, filter: "blur(9px)" };
+        toVars = { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" };
+        exitVars = { opacity: 0, scale: 1.22, filter: "blur(10px)" };
+        entranceEase = "back.out(1.6)";
+      } else if (variant === "swing") {
+        gsap.set(el, { transformPerspective: 700, transformOrigin: "50% 100%" });
+        fromVars = { opacity: 0, y: rise, rotate: i % 2 === 0 ? -9 : 9, filter: "blur(9px)" };
+        toVars = { opacity: 1, y: 0, rotate: 0, filter: "blur(0px)" };
+        exitVars = { opacity: 0, y: -rise * 0.8, rotate: i % 2 === 0 ? 7 : -7, filter: "blur(10px)" };
+        entranceEase = "power3.out";
+      } else {
+        // "tilt" — a real 3D tip: the element rotates up out of a
+        // backward lean into flat-on, like it has physical thickness
+        gsap.set(el, { transformPerspective: 800, transformOrigin: "50% 100%" });
+        fromVars = { opacity: 0, y: rise * 1.4, rotateX: -28, scale: 0.94, filter: "blur(10px)" };
+        toVars = { opacity: 1, y: 0, rotateX: 0, scale: 1, filter: "blur(0px)" };
+        exitVars = { opacity: 0, y: -rise * 0.9, rotateX: 20, scale: 1.04, filter: "blur(10px)" };
+        entranceEase = "power2.out";
+      }
+
+      gsap.fromTo(el, fromVars, {
+        ...toVars,
+        ease: entranceEase,
+        scrollTrigger: {
+          trigger: el,
+          start: `top ${95 - stagger * i * 40}%`,
+          end: "top 55%",
+          scrub: true,
+        },
+      });
       if (reduceMotion) return;
       gsap.to(el, {
-        opacity: 0,
-        y: -rise * 0.7,
-        ease: "none",
+        ...exitVars,
+        ease: "power1.in",
         scrollTrigger: {
           trigger: el,
           start: "top 12%",
@@ -67,17 +106,18 @@
   function charReveal(el) {
     if (!el || reduceMotion) return;
     const split = new SplitText(el, { type: "chars", charsClass: "ch" });
-    gsap.set(split.chars, { display: "inline-block" });
+    gsap.set(split.chars, { display: "inline-block", transformPerspective: 500 });
     gsap.fromTo(
       split.chars,
-      { opacity: 0, yPercent: 60, filter: "blur(10px)", rotateZ: 4 },
+      { opacity: 0, yPercent: 70, rotateX: -70, rotateZ: 6, filter: "blur(11px)" },
       {
         opacity: 1,
         yPercent: 0,
-        filter: "blur(0px)",
+        rotateX: 0,
         rotateZ: 0,
+        filter: "blur(0px)",
         stagger: 0.015,
-        ease: "none",
+        ease: "power2.out",
         scrollTrigger: {
           trigger: el,
           start: "top 90%",
@@ -86,6 +126,24 @@
         },
       }
     );
+    // disappear too, not just reveal — floats back out of focus as it
+    // scrolls past, same blur+fade language as everything else on the
+    // site instead of just sitting there once revealed
+    gsap.set(el, { transformPerspective: 700 });
+    gsap.to(el, {
+      opacity: 0,
+      y: -24,
+      rotateX: 16,
+      scale: 1.03,
+      filter: "blur(10px)",
+      ease: "power1.in",
+      scrollTrigger: {
+        trigger: el,
+        start: "top 8%",
+        end: "top -25%",
+        scrub: true,
+      },
+    });
   }
 
   /* ---------------------------------------------------------
@@ -122,6 +180,7 @@
         preloader.style.display = "none";
         document.body.classList.add("is-ready");
         runHeroIntro();
+        runHeroFlash();
       },
     });
     tl.to(fill, { width: "100%", duration: 0.4, ease: "power2.out" })
@@ -132,6 +191,7 @@
     preloader.style.display = "none";
     document.body.classList.add("is-ready");
     runHeroIntro();
+    runHeroFlash();
   } else {
     let progress = { v: 0 };
     const counter = gsap.to(progress, {
@@ -284,6 +344,51 @@
   });
 
   /* ---------------------------------------------------------
+     4b. INTRO COVER — the site's opening beat, in the same four beats
+     effects.js's setupIntro drives: (1) ZEN FOOTBALL reveals over the
+     gathering galaxy, holds, fades out; (2) [color-shift happens
+     silently in the canvas, nothing in this timeline]; (3) [the
+     galaxy-to-football morph, also silent here]; (4) at
+     INTRO_VIDEO_START_FRAC (0.84 — MUST match the same constant in
+     effects.js) the football glitters start dispersing AND the whole
+     cover dissolves away at once, revealing the real video background
+     right as it starts scrolling. Pin range ("+=220%") also must match
+     effects.js's setupIntro.
+     --------------------------------------------------------- */
+  if (document.querySelector(".intro")) {
+    const introWord = document.querySelector(".intro__word");
+    const introHint = document.querySelector(".intro__hint");
+    const INTRO_VIDEO_START_FRAC = 0.84;
+
+    gsap.set(introWord, { opacity: 0, y: 18 });
+    gsap.set(introHint, { opacity: reduceMotion ? 0 : 1 }); // visible at rest, like "scroll to enter"
+
+    if (reduceMotion) {
+      gsap.set(introWord, { opacity: 1, y: 0 });
+    } else {
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: ".intro",
+          start: "top top",
+          end: "+=220%",
+          scrub: true,
+        },
+      })
+        // the hint disappears the moment scrolling actually starts
+        .to(introHint, { opacity: 0, duration: 0.04, ease: "power2.out" }, 0)
+        // ZEN FOOTBALL reveals right as the galaxy finishes gathering
+        .to(introWord, { opacity: 1, y: 0, duration: 0.06, ease: "power2.out" }, 0.16)
+        .to(introWord, { opacity: 1, y: 0, duration: 0.08 }, 0.22) // hold, fully readable
+        // clears the stage well before the color-shift + football morph
+        .to(introWord, { opacity: 0, y: -22, duration: 0.06, ease: "power2.in" }, 0.3)
+        // the whole cover dissolves away in exact sync with the
+        // football glitters dispersing and the video starting to
+        // scroll — one unified "handoff" beat, not three separate ones
+        .to(".intro", { opacity: 0, duration: 1 - INTRO_VIDEO_START_FRAC, ease: "power2.in" }, INTRO_VIDEO_START_FRAC);
+    }
+  }
+
+  /* ---------------------------------------------------------
      5. HERO INTRO — fully scroll-bound: reveal, hold, disappear,
      all as ONE scrubbed timeline against the hero's own natural
      scroll position (it's normal, unpinned content — the video
@@ -291,17 +396,14 @@
      --------------------------------------------------------- */
   function runHeroIntro() {
     const lines = document.querySelectorAll(".hero__title .line span");
-    const eyebrow = document.querySelector(".hero__eyebrow");
     const foot = document.querySelector(".hero__foot");
 
     gsap.set(lines, { yPercent: 120 });
-    gsap.set(eyebrow, { opacity: 0, y: 14 });
-    gsap.set(foot, { opacity: 0, y: 20 });
+    gsap.set(foot, { opacity: 0, y: 20, filter: "blur(8px)" });
 
     if (reduceMotion) {
       gsap.set(lines, { yPercent: 0 });
-      gsap.set(eyebrow, { opacity: 1, y: 0 });
-      gsap.set(foot, { opacity: 1, y: 0 });
+      gsap.set(foot, { opacity: 1, y: 0, filter: "blur(0px)" });
       return;
     }
 
@@ -314,14 +416,47 @@
           scrub: true,
         },
       })
-      // reveal: 0 -> 12%
-      .to(eyebrow, { opacity: 1, y: 0, ease: "power2.out", duration: 0.06 }, 0)
+      // reveal: 0 -> 12% — lands right as the flash sequence (see
+      // runHeroFlash) finishes its last line
       .to(lines, { yPercent: 0, stagger: 0.03, ease: "power2.out", duration: 0.1 }, 0.02)
-      .to(foot, { opacity: 1, y: 0, ease: "power2.out", duration: 0.06 }, 0.08)
+      .to(foot, { opacity: 1, y: 0, filter: "blur(0px)", ease: "power2.out", duration: 0.08 }, 0.1)
       // hold, fully readable: 12% -> 32%
       .to(".hero__content", { opacity: 1, duration: 0.2 }, 0.12)
       // disappear as the next section (galaxy) rises into view: 32% -> 62%
-      .to(".hero__content", { opacity: 0, y: -40, scale: 0.96, ease: "power2.in", duration: 0.3 }, 0.32);
+      .to(".hero__content", { opacity: 0, y: -40, scale: 0.96, filter: "blur(8px)", ease: "power2.in", duration: 0.3 }, 0.32);
+  }
+
+  /* ---------------------------------------------------------
+     5a. HERO FLASH SEQUENCE — the floating title cards that play as
+     the hero rises into view, landing exactly as runHeroIntro's own
+     title reveal takes over. Uses the hero's APPROACH scroll (its top
+     travelling from the bottom of the viewport up to the top), not
+     the hold/exit range runHeroIntro uses — no overlap between the
+     two timelines. Each line: blur into focus, hold, blur back out,
+     same floating language as the page-wide word reveals, just
+     centered and sequenced like trailer title cards.
+     --------------------------------------------------------- */
+  function runHeroFlash() {
+    const lines = gsap.utils.toArray(".hero__flash-line");
+    if (!lines.length) return;
+    gsap.set(lines, { opacity: 0, scale: 0.75, filter: "blur(16px)" });
+    if (reduceMotion) return;
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".hero",
+        start: "top bottom",
+        end: "top top",
+        scrub: true,
+      },
+    });
+    const step = 1 / lines.length;
+    lines.forEach((line, i) => {
+      const t0 = i * step;
+      tl.to(line, { opacity: 1, scale: 1, filter: "blur(0px)", duration: step * 0.4, ease: "power2.out" }, t0)
+        .to(line, { opacity: 1, scale: 1, filter: "blur(0px)", duration: step * 0.25 }, t0 + step * 0.4)
+        .to(line, { opacity: 0, scale: 1.15, filter: "blur(12px)", duration: step * 0.35, ease: "power2.in" }, t0 + step * 0.65);
+    });
   }
 
   /* ---------------------------------------------------------
@@ -341,7 +476,7 @@
     })
       .to(".galaxy__content", { opacity: 1, y: 0, duration: 0.14, ease: "power2.out" }, 0)
       .to(".galaxy__content", { opacity: 1, y: 0, duration: 0.16 }, 0.14) // hold, fully readable
-      .to(".galaxy__content", { opacity: 0, y: -30, duration: 0.16, ease: "power2.in" }, 0.3);
+      .to(".galaxy__content", { opacity: 0, y: -30, filter: "blur(8px)", duration: 0.16, ease: "power2.in" }, 0.3);
 
     charReveal(document.querySelector(".galaxy__title"));
   }
@@ -368,29 +503,113 @@
   }
 
   /* ---------------------------------------------------------
-     6. MARQUEE — driven directly by scroll position, not an
-     independent timer. Two cloned tracks sit side by side and
-     their combined offset is read straight off how far the page
-     has scrolled — scroll down, the ticker moves one way; scroll
-     up, it reverses. It never moves on its own.
+     6b. FLOATING WORD REVEALS — not normal scrolling text. Each word
+     lives in the fixed `.floatwords` overlay (outside every section,
+     see index.html), invisible at rest. As its associated section
+     scrolls near, the word blurs into focus, scales up, and glows
+     (the glow itself is a constant text-shadow in CSS — fading
+     opacity in and out against a constant glow is what reads as
+     "glows for a moment, then disappears"), holds briefly, then blurs
+     and scales back out. Every word is tied to a different section so
+     they read as floating around the football, the gear shots, the
+     stadium — not stuck to one spot on the page.
      --------------------------------------------------------- */
-  document.querySelectorAll(".marquee__track").forEach((track) => {
-    const clone = track.cloneNode(true);
-    track.parentElement.appendChild(clone);
-    const tracks = track.parentElement.querySelectorAll(".marquee__track");
+  (function setupFloatingWords() {
+    const words = gsap.utils.toArray(".floatword");
+    if (!words.length) return;
 
-    if (reduceMotion) return;
+    // word text -> which section anchor triggers it. Falls back to
+    // skipping a word gracefully if a section id ever goes missing.
+    const ANCHORS = {
+      Speed: "#promo",
+      Power: "#gear",
+      Control: "#numbers",
+      Precision: "#training",
+      Teamwork: "#match",
+      Passion: "#fan",
+      Discipline: "#news",
+      Performance: "#community",
+      Confidence: ".statement",
+      Victory: "#join",
+    };
 
-    ScrollTrigger.create({
-      trigger: track.parentElement,
-      start: "top bottom",
-      end: "bottom top",
-      onUpdate: (self) => {
-        const raw = (self.scroll() * 0.05) % 100;
-        gsap.set(tracks, { xPercent: -raw });
-      },
+    words.forEach((word) => {
+      const anchorSel = ANCHORS[word.textContent.trim()];
+      const anchor = anchorSel && document.querySelector(anchorSel);
+      gsap.set(word, { opacity: 0, scale: 0.72, filter: "blur(16px)" });
+      if (reduceMotion || !anchor) return;
+
+      gsap
+        .timeline({
+          scrollTrigger: {
+            trigger: anchor,
+            // tighter than a plain top-85%->top-15% window — leaves a
+            // buffer at both ends so this word is fully gone before the
+            // next section's word has a chance to start appearing,
+            // instead of the two overlapping mid-transition
+            start: "top 78%",
+            end: "top 24%",
+            scrub: true,
+          },
+        })
+        // blur into focus, scale up — the "cinematic" entrance
+        .to(word, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, 0)
+        // hold, fully in focus and glowing
+        .to(word, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.3 }, 0.35)
+        // dissolve back out — bigger + blurrier, like it's drifting away
+        .to(word, { opacity: 0, scale: 1.18, filter: "blur(14px)", duration: 0.35, ease: "power2.in" }, 0.65);
     });
-  });
+  })();
+
+  /* ---------------------------------------------------------
+     6c. FLOATING PHRASES — a second layer of longer sport/product
+     copy, tied to the SAME section anchors as the words above but a
+     slightly later window of that section's transit (so the word
+     leads, the phrase follows — a staggered cascade rather than two
+     things landing at once). Two different animation recipes instead
+     of reusing the words' blur+scale, per data-style:
+       "drift" — rises up out of a skew into place, then drifts further
+                 up and skews the other way on exit (a tilt-settle feel)
+       "slide" — slides in from the side (data-side: left/right) with a
+                 slight rotation, then continues off the same direction
+                 on exit (a horizontal sweep feel)
+     --------------------------------------------------------- */
+  (function setupFloatPhrases() {
+    const phrases = gsap.utils.toArray(".floatphrase");
+    if (!phrases.length) return;
+
+    phrases.forEach((phrase) => {
+      const anchor = document.querySelector(phrase.dataset.anchor);
+      const style = phrase.dataset.style;
+      const side = phrase.dataset.side === "right" ? 1 : -1;
+
+      if (style === "slide") {
+        gsap.set(phrase, { opacity: 0, x: 90 * side, rotation: 5 * side, filter: "blur(12px)" });
+      } else {
+        gsap.set(phrase, { opacity: 0, y: 26, skewY: 5, scale: 0.92, filter: "blur(14px)" });
+      }
+      if (reduceMotion || !anchor) return;
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: anchor,
+          start: "top 62%",
+          end: "top 8%",
+          scrub: true,
+        },
+      });
+
+      if (style === "slide") {
+        tl.to(phrase, { opacity: 1, x: 0, rotation: 0, filter: "blur(0px)", duration: 0.4, ease: "power2.out" }, 0)
+          .to(phrase, { opacity: 1, duration: 0.22 }, 0.4)
+          .to(phrase, { opacity: 0, x: 130 * side, rotation: 7 * side, filter: "blur(12px)", duration: 0.38, ease: "power2.in" }, 0.62);
+      } else {
+        tl.to(phrase, { opacity: 1, y: 0, skewY: 0, scale: 1, filter: "blur(0px)", duration: 0.4, ease: "power2.out" }, 0)
+          .to(phrase, { opacity: 1, duration: 0.22 }, 0.4)
+          .to(phrase, { opacity: 0, y: -26, skewY: -5, scale: 0.94, filter: "blur(12px)", duration: 0.38, ease: "power2.in" }, 0.62);
+      }
+    });
+  })();
 
   /* ---------------------------------------------------------
      7. FEATURE SECTIONS — text-only "product reveal" moments.
@@ -398,8 +617,8 @@
      body/list get the standard reveal-and-fade.
      --------------------------------------------------------- */
   document.querySelectorAll(".feature__title").forEach(charReveal);
-  revealAndFade(".feature__body, .feature__list");
-  revealAndFade(".feature .eyebrow");
+  revealAndFade(".feature__body, .feature__list", { variant: "tilt" });
+  revealAndFade(".feature .eyebrow", { variant: "swing" });
 
   /* ---------------------------------------------------------
      8. STATS — count up, driven directly by scroll position (not
@@ -438,17 +657,24 @@
   });
 
   charReveal(document.querySelector(".stats__intro .feature__title"));
-  revealAndFade(".stats__intro .eyebrow");
-  revealAndFade(".stat", { y: 24, duration: 0.7, stagger: 0.05 });
+  revealAndFade(".stats__intro .eyebrow", { variant: "swing" });
+  revealAndFade(".stat", { y: 24, stagger: 0.05, variant: "punch" });
 
   /* ---------------------------------------------------------
-     9. STATEMENT — word by word scroll reveal
+     9. STATEMENT — word by word scroll reveal, PLUS the whole block
+     floats into and back out of focus (blur+fade) the same way every
+     other text block on the site does — the word-lighting is layered
+     on top of that, not a replacement for it.
      --------------------------------------------------------- */
+  revealAndFade(".statement .wrap", { variant: "tilt" });
   document.querySelectorAll(".statement__text").forEach((el) => {
     const split = new SplitText(el, { type: "words", wordsClass: "word" });
+    // words are gradient-filled by CSS now (.statement__text .word), so
+    // animating "color" would do nothing — opacity is what makes each
+    // word "light up" dim-to-bright as it's read, same effect
+    gsap.set(split.words, { opacity: 0.32 });
     gsap.to(split.words, {
-      color: "var(--ink)",
-      textShadow: "var(--text-shadow)",
+      opacity: 1,
       stagger: 0.5,
       scrollTrigger: {
         trigger: el,
@@ -461,16 +687,22 @@
 
   /* ---------------------------------------------------------
      10. CTA fade-ins — the CTA's backdrop is the site's one fixed
-     video; only the sparkle canvas + text sit on top of it.
+     video; only the sparkle canvas + text sit on top of it. Content
+     also floats back out of focus as the footer arrives, same
+     blur+fade language as everything above it.
      --------------------------------------------------------- */
   gsap.utils.toArray(".cta__content > *").forEach((el, i) => {
+    gsap.set(el, { transformPerspective: 700, transformOrigin: "50% 100%" });
     gsap.fromTo(
       el,
-      { opacity: 0, y: 40 },
+      { opacity: 0, y: 46, scale: 0.94, rotateX: -18, filter: "blur(9px)" },
       {
         opacity: 1,
         y: 0,
-        ease: "none",
+        scale: 1,
+        rotateX: 0,
+        filter: "blur(0px)",
+        ease: "power2.out",
         scrollTrigger: {
           trigger: ".cta",
           start: `top ${80 - i * 12}%`,
@@ -479,8 +711,60 @@
         },
       }
     );
+    if (reduceMotion) return;
+    gsap.to(el, {
+      opacity: 0,
+      y: -30,
+      rotateX: 14,
+      filter: "blur(8px)",
+      ease: "power1.in",
+      scrollTrigger: {
+        trigger: ".cta",
+        start: `top ${10 - i * 8}%`,
+        end: `top ${-35 - i * 8}%`,
+        scrub: true,
+      },
+    });
   });
   charReveal(document.querySelector(".cta__title"));
+
+  /* ---------------------------------------------------------
+     10b. FOOTER — floats/fades in on a staggered cascade like
+     everything above it. IMPORTANT: this is entrance-only, and NOT
+     built on the shared revealAndFade() helper. revealAndFade's exit
+     window ends at "top 55%" of the viewport — for most elements that
+     works, but the footer is the LAST thing on the page: at max
+     scroll, the page can't scroll any further, so the footer's top
+     can physically never reach 55% down the viewport unless the
+     footer itself is taller than ~45% of the viewport. The trigger's
+     "end" was an unreachable scroll position, so the tween never
+     finished and the footer sat stuck at opacity 0 — invisible. Fixed
+     by anchoring the end to "bottom bottom" (the footer's own bottom
+     edge hitting the viewport's bottom edge), which is exactly what
+     happens at max scroll, guaranteed reachable regardless of height.
+     No exit tween either — there's nothing below the footer to
+     justify hiding it again once you've scrolled all the way down.
+     --------------------------------------------------------- */
+  gsap.utils.toArray(".footer__logo, .footer__links, .footer__meta, .footer__credit").forEach((el, i) => {
+    gsap.set(el, { transformPerspective: 600, transformOrigin: "50% 100%" });
+    gsap.fromTo(
+      el,
+      { opacity: 0, y: 26, rotateX: -16, filter: "blur(6px)" },
+      {
+        opacity: 1,
+        y: 0,
+        rotateX: 0,
+        filter: "blur(0px)",
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: ".footer",
+          start: `top ${95 - i * 10}%`,
+          end: "bottom bottom",
+          scrub: true,
+        },
+      }
+    );
+  });
 
   /* ---------------------------------------------------------
      11. SMOOTH ANCHOR LINKS
@@ -534,4 +818,14 @@
 
   // one more safety net for anything slow to settle (e.g. video metadata)
   scheduleRefresh(1400);
+
+  } catch (err) {
+    // Something in setup threw — most likely a vendored library failed
+    // to load (check the browser console for the real error). Don't
+    // leave the visitor stuck on the preloader because of it.
+    console.error("Site init error — falling back to a static page:", err);
+    var preloaderEl = document.querySelector(".preloader");
+    if (preloaderEl) preloaderEl.style.display = "none";
+    document.body.classList.add("is-ready");
+  }
 })();
