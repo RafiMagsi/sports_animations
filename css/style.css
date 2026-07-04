@@ -1212,12 +1212,16 @@ body.cursor-hover .cursor-ring{
 .flags-carousel{
   position: relative;
   padding: clamp(100px, 12vw, 160px) 0;
-  overflow: visible;
+  overflow: clip;
 }
 .quote-carousel__wrap,
 .flags-carousel__wrap{
   position: relative;
   z-index: 2;
+  min-height: clamp(560px, 76vh, 860px);
+  display: grid;
+  align-content: center;
+  overflow: clip;
 }
 .quote-carousel__header,
 .flags-carousel__header{
@@ -1243,7 +1247,7 @@ body.cursor-hover .cursor-ring{
 }
 .quote-carousel__viewport,
 .flags-carousel__viewport{
-  overflow: visible;
+  overflow: clip;
   position: relative;
   perspective: 1400px;
   perspective-origin: 50% 40%;
@@ -1254,6 +1258,7 @@ body.cursor-hover .cursor-ring{
   display: flex;
   align-items: center;
   gap: clamp(20px, 2.4vw, 34px);
+  width: max-content;
   will-change: transform;
   transform-origin: 50% 50%;
   transform-style: preserve-3d;

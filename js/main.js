@@ -1023,12 +1023,15 @@
 
     function metrics() {
       const viewportWidth = viewport.clientWidth;
-      const travel = Math.max(0, track.scrollWidth - viewportWidth);
+      const firstCardWidth = cards[0]?.offsetWidth || 0;
+      const sidePad = Math.max(24, viewportWidth * 0.08);
+      const startX = viewportWidth + sidePad;
+      const endX = -(track.scrollWidth + firstCardWidth + sidePad);
       return {
         viewportWidth,
         centerX: viewportWidth / 2,
-        startX: viewportWidth * 0.62,
-        endX: -(travel + viewportWidth * 0.18),
+        startX,
+        endX,
         trackYStart: opts.trackYStart,
         trackYEnd: opts.trackYEnd,
         trackRotateStart: opts.trackRotateStart,
@@ -1092,7 +1095,7 @@
       trigger: root,
       start: "top top",
       end: "+=140%",
-      pin: wrap,
+      pin: root,
       anticipatePin: 1,
       scrub: true,
       onUpdate: (self) => {
