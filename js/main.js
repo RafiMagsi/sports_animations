@@ -369,8 +369,8 @@
         ease: entranceEase,
         scrollTrigger: {
           trigger: scope,
-          start: `top ${84 - stagger * i * 12}%`,
-          end: "top 32%",
+          start: `top ${90 - stagger * i * 10}%`,
+          end: "top 18%",
           scrub: true,
           invalidateOnRefresh: true
         },
@@ -381,8 +381,8 @@
         ease: "power1.in",
         scrollTrigger: {
           trigger: scope,
-          start: "bottom 42%",
-          end: "bottom top",
+          start: "bottom 60%",
+          end: "bottom -10%",
           scrub: true,
           invalidateOnRefresh: true
         },
@@ -450,8 +450,8 @@
         ease: enterEase,
         scrollTrigger: {
           trigger: scope,
-          start: "top 84%",
-          end: "top 28%",
+          start: "top 90%",
+          end: "top 16%",
           scrub: true,
           invalidateOnRefresh: true
         },
@@ -466,8 +466,8 @@
       ease: exitEase,
       scrollTrigger: {
         trigger: scope,
-        start: "bottom 44%",
-        end: "bottom top",
+        start: "bottom 60%",
+        end: "bottom -10%",
         scrub: true,
         invalidateOnRefresh: true
       },
@@ -1538,7 +1538,7 @@
 
   safeRun("quoteCarousel", function () {
     setupScrollCarousel(".quote-carousel", ".quote-card", {
-      scrollLength: "220%",
+      scrollLength: "320%",
       entryOffset: 80,
       exitOffset: 120,
       trackYStart: 0,
@@ -1557,7 +1557,7 @@
 
   safeRun("flagsCarousel", function () {
     setupScrollCarousel(".flags-carousel", ".flag-card", {
-      scrollLength: "220%",
+      scrollLength: "320%",
       entryOffset: 60,
       exitOffset: 100,
       trackYStart: 0,

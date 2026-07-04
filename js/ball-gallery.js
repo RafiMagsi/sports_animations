@@ -34,7 +34,7 @@
 
     items.forEach((item, index) => {
       const offset = Number(item.dataset.offset || 0);
-      const local = wrap01(progress * 1.12 + offset);
+      const local = wrap01(progress * 0.94 + offset);
       const pathX = gsap.utils.interpolate(startX, endX, local);
       const arc = Math.sin(local * Math.PI);
       const y = bandY - arc * height * 0.065 + (local - 0.5) * height * 0.022;
@@ -79,7 +79,7 @@
   const trigger = ScrollTrigger.create({
     trigger: root,
     start: "top top",
-    end: "+=220%",
+    end: "+=320%",
     pin: root,
     anticipatePin: 1,
     scrub: true,

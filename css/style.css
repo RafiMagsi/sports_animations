@@ -1276,6 +1276,24 @@ body.cursor-hover .cursor-ring{
   margin: 16px 0 22px;
   color: var(--ink);
   line-height: 0.94;
+  position: relative;
+  letter-spacing: 0.015em;
+}
+.feature__title::before,
+.quote-carousel__title::before,
+.flags-carousel__title::before,
+.ball-gallery__title::before{
+  content:'';
+  position: absolute;
+  inset: -10% -8%;
+  z-index: -1;
+  border-radius: 34px;
+  background:
+    radial-gradient(58% 62% at 22% 28%, rgba(143, 231, 255, 0.16), transparent 72%),
+    radial-gradient(56% 58% at 78% 72%, rgba(255, 148, 217, 0.14), transparent 74%),
+    radial-gradient(42% 48% at 50% 52%, rgba(179, 155, 255, 0.12), transparent 76%);
+  filter: blur(28px);
+  pointer-events: none;
 }
 .feature__body{
   color: var(--ink-dim);
@@ -1411,6 +1429,9 @@ body.cursor-hover .cursor-ring{
 .flags-carousel__title{
   font-size: clamp(48px, 8.8vw, 88px);
   margin-top: 18px;
+  position: relative;
+  line-height: 0.92;
+  letter-spacing: 0.015em;
 }
 .quote-carousel__viewport,
 .flags-carousel__viewport{
@@ -1723,6 +1744,8 @@ body.cursor-hover .cursor-ring{
   margin: 18px 0 18px;
   font-size: clamp(48px, 8.4vw, 96px);
   line-height: 0.92;
+  position: relative;
+  letter-spacing: 0.015em;
 }
 .ball-gallery__body{
   max-width: 42ch;
@@ -2085,6 +2108,38 @@ body.cursor-hover .cursor-ring{
 .footer__logo span,
 .preloader__mark .holo-text{
   filter: drop-shadow(0 2px 16px rgba(0,0,0,0.45));
+}
+
+/* SplitText creates visible per-character nodes (.ch), so premium title
+   color has to be applied to those actual rendered glyphs, not only the
+   outer heading elements. */
+.feature__title .ch,
+.quote-carousel__title .ch,
+.flags-carousel__title .ch,
+.ball-gallery__title .ch{
+  background: linear-gradient(180deg, #ffffff 0%, #f3fcff 14%, #8fe7ff 38%, #b79dff 66%, #ff97de 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0.82px rgba(248,250,255,0.22);
+  text-shadow: none;
+  filter:
+    drop-shadow(0 1px 0 rgba(255,255,255,0.18))
+    drop-shadow(0 6px 18px rgba(0,0,0,0.38));
+}
+
+.quote-carousel__title .ch,
+.flags-carousel__title .ch{
+  background: linear-gradient(180deg, #ffffff 0%, #f8fdff 12%, #a1f0ff 36%, #c29dff 66%, #fface5 100%);
+}
+
+.ball-gallery__title .ch{
+  background: linear-gradient(180deg, #ffffff 0%, #f8fdff 10%, #9ceeff 34%, #b18dff 62%, #ffd38b 100%);
+  filter:
+    drop-shadow(0 1px 0 rgba(255,255,255,0.18))
+    drop-shadow(0 0 22px rgba(255, 211, 139, 0.12))
+    drop-shadow(0 8px 22px rgba(0,0,0,0.42));
 }
 
 /* =========================================================
