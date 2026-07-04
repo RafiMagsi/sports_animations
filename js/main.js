@@ -699,7 +699,7 @@
         holdVars = { opacity: 1, rotateY: 0, rotateX: 0, scale: 1, filter: "blur(0px)" };
         exitVars = { opacity: 0, rotateY: i % 2 === 0 ? 68 : -68, rotateX: 8, scale: 1.08, filter: "blur(12px)" };
       } else if (variant === "collide") {
-        gsap.set(line, { transformPerspective: 1600, transformOrigin: i % 2 === 0 ? "0% 50%" : "100% 50%" });
+        gsap.set(line, { transformPerspective: 1600, transformOrigin: i % 2 === 0 ? "50% 50%" : "50% 50%" });
         fromVars = { opacity: 0, x: i % 2 === 0 ? 240 : -240, scaleX: 1.18, scaleY: 0.84, rotateZ: i % 2 === 0 ? -4 : 4, filter: "blur(16px)" };
         holdVars = { opacity: 1, x: 0, scaleX: 1, scaleY: 1, rotateZ: 0, filter: "blur(0px)" };
         exitVars = { opacity: 0, x: i % 2 === 0 ? -180 : 180, scaleX: 0.96, scaleY: 1.06, rotateZ: i % 2 === 0 ? 3 : -3, filter: "blur(12px)" };

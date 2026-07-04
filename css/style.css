@@ -766,7 +766,7 @@ body.cursor-hover .cursor-ring{
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  font-size: clamp(46px, 9.5vw, 148px);
+  font-size: clamp(46px, 9.5vw, 108px);
   text-align: center;
   white-space: nowrap;
   padding: 0.3em 0.7em;
