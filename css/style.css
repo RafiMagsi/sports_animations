@@ -227,6 +227,16 @@ body.cursor-hover .cursor-ring{
 .cta{
   position: relative;
   isolation: isolate;
+  background:
+    linear-gradient(180deg, rgba(4, 6, 12, 0.56) 0%, rgba(4, 6, 12, 0.26) 36%, rgba(4, 6, 12, 0.14) 100%);
+}
+.hero{
+  background:
+    linear-gradient(180deg, rgba(4, 6, 12, 0.72) 0%, rgba(4, 6, 12, 0.4) 38%, rgba(4, 6, 12, 0.18) 100%);
+}
+.hero-copy{
+  background:
+    linear-gradient(180deg, rgba(4, 6, 12, 0.62) 0%, rgba(4, 6, 12, 0.3) 36%, rgba(4, 6, 12, 0.16) 100%);
 }
 .floatword{
   position: absolute;

@@ -6,20 +6,6 @@
 (function () {
   "use strict";
 
-  // HARD FAILSAFE — completely independent of GSAP/ScrollTrigger/
-  // SplitText or anything below. If any of those fail to load, or if
-  // any script error happens anywhere during setup, this plain
-  // setTimeout still fires and forces the preloader out of the way so
-  // a visitor is never permanently stuck looking at "00%". This is the
-  // one thing on the page that cannot be broken by a bug elsewhere.
-  window.setTimeout(function () {
-    var p = document.querySelector(".preloader");
-    if (p && p.style.display !== "none") {
-      p.style.display = "none";
-      document.body.classList.add("is-ready");
-    }
-  }, 4000);
-
   try {
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -91,6 +77,8 @@
   const PHRASE_VARIANTS = ["drift", "slide", "zoom", "collide", "flip", "bounce", "smoke"];
   const WORD_VARIANTS = ["glow", "rise", "spin", "zoom", "collide", "flip", "bounce", "smoke"];
   const HERO_FLASH_VARIANTS = ["zoom", "flip", "collide", "bounce", "smoke"];
+  let pageReady = false;
+  let visibilityRefreshTimer = null;
   const FLOAT_WORD_ANCHORS = {
     Speed: "#promo",
     Power: "#gear",
@@ -107,6 +95,62 @@
   function floatBlur(px) {
     return px > 0 ? "blur(" + px + "px)" : "none";
   }
+
+  function refreshVisibilityLifecycle(delay) {
+    const run = () => {
+      requestAnimationFrame(() => {
+        clampFloatingText();
+        if (typeof ScrollTrigger !== "undefined") {
+          ScrollTrigger.sort();
+          ScrollTrigger.refresh();
+          requestAnimationFrame(() => ScrollTrigger.update());
+        }
+      });
+    };
+
+    if (!delay) {
+      run();
+      return;
+    }
+
+    clearTimeout(visibilityRefreshTimer);
+    visibilityRefreshTimer = setTimeout(() => {
+      visibilityRefreshTimer = null;
+      run();
+    }, delay);
+  }
+
+  function finalizePageReady() {
+    const preloader = document.querySelector(".preloader");
+    if (preloader) {
+      preloader.style.pointerEvents = "none";
+      preloader.style.visibility = "hidden";
+      preloader.style.display = "none";
+    }
+
+    document.body.classList.add("is-ready");
+
+    if (pageReady) {
+      refreshVisibilityLifecycle(0);
+      return;
+    }
+
+    pageReady = true;
+    refreshVisibilityLifecycle(0);
+    refreshVisibilityLifecycle(120);
+    refreshVisibilityLifecycle(420);
+  }
+
+  // HARD FAILSAFE — independent from the animation boot. If anything
+  // stalls, the page still exits the preloader and forces a full
+  // ScrollTrigger/layout refresh so later sections don't stay measured
+  // against stale preloader-era geometry.
+  window.setTimeout(function () {
+    const p = document.querySelector(".preloader");
+    if (p && p.style.display !== "none") {
+      finalizePageReady();
+    }
+  }, 4000);
 
   function ensureSectionOverlay(anchorSel) {
     const section = document.querySelector(anchorSel);
@@ -422,29 +466,39 @@
   const preloader = document.querySelector(".preloader");
   const fill = document.querySelector(".preloader__fill");
   const pct = document.querySelector(".preloader__pct");
+  let heroRevealBooted = false;
 
   function revealHero() {
+    if (heroRevealBooted) return;
+    heroRevealBooted = true;
     safeRun("heroIntro", runHeroIntro);
     safeRun("heroCopyIntro", runHeroCopyIntro);
     safeRun("heroFlash", runHeroFlash);
+    if (typeof ScrollTrigger !== "undefined") {
+      ScrollTrigger.refresh();
+    }
+  }
+
+  function finishPreloader() {
+    finalizePageReady();
   }
 
   function killPreloader() {
+    if (!preloader) {
+      finishPreloader();
+      return;
+    }
     const tl = gsap.timeline({
-      onComplete: () => {
-        preloader.style.display = "none";
-        document.body.classList.add("is-ready");
-        revealHero();
-      },
+      onComplete: finishPreloader,
     });
     tl.to(fill, { width: "100%", duration: 0.4, ease: "power2.out" })
       .to(preloader, { yPercent: -100, duration: 0.9, ease: "power4.inOut" }, "+=0.15");
   }
 
+  revealHero();
+
   if (reduceMotion) {
-    preloader.style.display = "none";
-    document.body.classList.add("is-ready");
-    revealHero();
+    finishPreloader();
   } else {
     let progress = { v: 0 };
     const counter = gsap.to(progress, {
@@ -673,8 +727,19 @@
       scrollTrigger: {
         trigger: ".hero",
         start: "top top",
-        end: "+=90%",
+        end: "+=42%",
         scrub: true,
+        invalidateOnRefresh: true,
+        onLeave: () => {
+          if (orbitals.length) gsap.set(orbitals, { opacity: 0 });
+          if (stage) gsap.set(stage, { opacity: 0 });
+          if (flash) gsap.set(flash, { opacity: 0 });
+        },
+        onLeaveBack: () => {
+          if (orbitals.length) gsap.set(orbitals, { opacity: 0 });
+          if (stage) gsap.set(stage, { opacity: 0.96 });
+          if (flash) gsap.set(flash, { opacity: 1 });
+        }
       },
     });
     tl.to(orbitals, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", ease: "power2.out", duration: 0.14, stagger: 0.03 }, 0.08)
@@ -710,7 +775,8 @@
         trigger: section,
         start: "top 82%",
         end: "top 36%",
-        scrub: true
+        scrub: true,
+        invalidateOnRefresh: true
       }
     });
 
@@ -1727,6 +1793,7 @@
       document.fonts.ready.then(() => scheduleRefresh(80));
     }
     window.addEventListener("load", () => scheduleRefresh(80));
+    window.addEventListener("load", () => refreshVisibilityLifecycle(140));
 
     const imgs = Array.from(document.images || []);
     Promise.all(
@@ -1743,7 +1810,18 @@
     // leave the visitor stuck on the preloader because of it.
     console.error("Site init error — falling back to a static page:", err);
     var preloaderEl = document.querySelector(".preloader");
-    if (preloaderEl) preloaderEl.style.display = "none";
+    if (preloaderEl) {
+      preloaderEl.style.pointerEvents = "none";
+      preloaderEl.style.visibility = "hidden";
+      preloaderEl.style.display = "none";
+    }
     document.body.classList.add("is-ready");
+    if (typeof ScrollTrigger !== "undefined") {
+      requestAnimationFrame(() => {
+        ScrollTrigger.sort();
+        ScrollTrigger.refresh();
+        requestAnimationFrame(() => ScrollTrigger.update());
+      });
+    }
   }
 })();
