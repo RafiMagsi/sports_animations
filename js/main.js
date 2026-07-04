@@ -79,6 +79,7 @@
   const HERO_FLASH_VARIANTS = ["zoom", "flip", "collide", "bounce", "smoke"];
   let pageReady = false;
   let visibilityRefreshTimer = null;
+  const SECTION_SCOPE_SELECTOR = ".hero, .hero-copy, .galaxy, .feature, .stats, .quote-carousel, .flags-carousel, .ball-gallery, .statement, .cta";
   const FLOAT_WORD_ANCHORS = {
     Speed: "#promo",
     Power: "#gear",
@@ -251,6 +252,39 @@
     }
   }
 
+  function closestSectionScope(node) {
+    return node && node.closest ? node.closest(SECTION_SCOPE_SELECTOR) : null;
+  }
+
+  function setupSectionIndices() {
+    const sections = Array.from(document.querySelectorAll("main > section"))
+      .filter((section) => !section.classList.contains("intro"));
+    const total = sections.length;
+
+    sections.forEach((section, index) => {
+      let indexEl = null;
+      Array.from(section.children).some((child) => {
+        if (child.classList && (child.classList.contains("feature__index") || child.classList.contains("galaxy__index") || child.classList.contains("section__index"))) {
+          indexEl = child;
+          return true;
+        }
+        return false;
+      });
+
+      if (!indexEl) {
+        indexEl = document.createElement("div");
+        indexEl.className = "section__index";
+        section.insertBefore(indexEl, section.firstChild);
+      } else if (!indexEl.classList.contains("section__index")) {
+        indexEl.classList.add("section__index");
+      }
+
+      indexEl.textContent = String(index + 1).padStart(2, "0") + " / " + String(total).padStart(2, "0");
+    });
+  }
+
+  setupSectionIndices();
+
   /* ---------------------------------------------------------
      REUSABLE: reveal-in-then-fade-out-on-exit — fully scroll-bound.
      Every normal text block on the site uses this. Both halves are
@@ -273,6 +307,7 @@
     const variant = opts.variant || "tilt";
 
     gsap.utils.toArray(targets).forEach((el, i) => {
+      const scope = closestSectionScope(el) || el;
       let fromVars, toVars, exitVars, entranceEase;
 
       if (variant === "punch") {
@@ -333,10 +368,11 @@
         ...toVars,
         ease: entranceEase,
         scrollTrigger: {
-          trigger: el,
-          start: `top ${95 - stagger * i * 40}%`,
-          end: "top 55%",
+          trigger: scope,
+          start: `top ${84 - stagger * i * 12}%`,
+          end: "top 32%",
           scrub: true,
+          invalidateOnRefresh: true
         },
       });
       if (reduceMotion) return;
@@ -344,10 +380,11 @@
         ...exitVars,
         ease: "power1.in",
         scrollTrigger: {
-          trigger: el,
-          start: "top 12%",
-          end: "top -30%",
+          trigger: scope,
+          start: "bottom 42%",
+          end: "bottom top",
           scrub: true,
+          invalidateOnRefresh: true
         },
       });
     });
@@ -363,6 +400,7 @@
   function charReveal(el, opts) {
     if (!el || reduceMotion) return;
     opts = opts || {};
+    const scope = closestSectionScope(el) || el;
     const variant = opts.variant || "zoom";
     const split = new SplitText(el, { type: "chars", charsClass: "ch" });
     gsap.set(split.chars, { display: "inline-block", transformPerspective: 500 });
@@ -411,10 +449,11 @@
         stagger: 0.015,
         ease: enterEase,
         scrollTrigger: {
-          trigger: el,
-          start: "top 90%",
-          end: "top 45%",
+          trigger: scope,
+          start: "top 84%",
+          end: "top 28%",
           scrub: true,
+          invalidateOnRefresh: true
         },
       }
     );
@@ -426,10 +465,11 @@
       ...exitVars,
       ease: exitEase,
       scrollTrigger: {
-        trigger: el,
-        start: "top 8%",
-        end: "top -25%",
+        trigger: scope,
+        start: "bottom 44%",
+        end: "bottom top",
         scrub: true,
+        invalidateOnRefresh: true
       },
     });
   }
@@ -1533,18 +1573,24 @@
 
   safeRun("sectionPins", function () {
     if (reduceMotion) return;
-
-    const hero = document.querySelector(".hero");
-    if (hero) {
+    gsap.utils.toArray(".hero, .hero-copy, .feature, .stats, .statement, .cta").forEach((section) => {
+      const holdRatio = section.matches(".hero")
+        ? 0.42
+        : section.matches(".hero-copy")
+          ? 0.32
+          : section.matches(".statement, .cta")
+            ? 0.22
+            : 0.34;
       ScrollTrigger.create({
-        trigger: hero,
+        trigger: section,
         start: "top top",
-        end: "+=42%",
+        end: () => "+=" + Math.round(window.innerHeight * (window.innerWidth < 900 ? holdRatio * 0.7 : holdRatio)),
         pin: true,
         anticipatePin: 1,
-        pinSpacing: true
+        pinSpacing: true,
+        invalidateOnRefresh: true
       });
-    }
+    });
   });
 
   safeRun("seasonChipDrift", function () {
