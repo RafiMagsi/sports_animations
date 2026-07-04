@@ -91,15 +91,63 @@
   const PHRASE_VARIANTS = ["drift", "slide", "zoom", "collide", "flip", "bounce", "smoke"];
   const WORD_VARIANTS = ["glow", "rise", "spin", "zoom", "collide", "flip", "bounce", "smoke"];
   const HERO_FLASH_VARIANTS = ["zoom", "flip", "collide", "bounce", "smoke"];
+  const FLOAT_WORD_ANCHORS = {
+    Speed: "#promo",
+    Power: "#gear",
+    Control: "#numbers",
+    Precision: "#training",
+    Teamwork: "#match",
+    Passion: "#fan",
+    Discipline: "#news",
+    Performance: "#community",
+    Confidence: ".statement",
+    Victory: "#join"
+  };
+
   function floatBlur(px) {
     return px > 0 ? "blur(" + px + "px)" : "none";
   }
 
-  function buildFloatingNarratives() {
-    const layer = document.querySelector(".floatphrase-layer");
-    if (!layer) return;
-    layer.innerHTML = "";
+  function ensureSectionOverlay(anchorSel) {
+    const section = document.querySelector(anchorSel);
+    if (!section) return null;
 
+    let overlay = section.querySelector(".section-overlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.className = "section-overlay";
+      overlay.setAttribute("aria-hidden", "true");
+      section.appendChild(overlay);
+    }
+    return overlay;
+  }
+
+  function distributeSectionOverlays() {
+    const floatRoot = document.querySelector(".floatwords");
+    if (!floatRoot) return;
+
+    const smoke = floatRoot.querySelector(".floatwords__smoke");
+    const banner = floatRoot.querySelector(".winner-banner");
+    const words = Array.from(floatRoot.querySelectorAll(".floatword"));
+
+    words.forEach((word) => {
+      const anchorSel = FLOAT_WORD_ANCHORS[word.textContent.trim()];
+      const overlay = anchorSel ? ensureSectionOverlay(anchorSel) : null;
+      if (overlay) overlay.appendChild(word);
+    });
+
+    if (smoke) {
+      const promoOverlay = ensureSectionOverlay("#promo") || ensureSectionOverlay("#hero");
+      if (promoOverlay) promoOverlay.appendChild(smoke);
+    }
+
+    if (banner) {
+      const joinOverlay = ensureSectionOverlay("#join");
+      if (joinOverlay) joinOverlay.appendChild(banner);
+    }
+  }
+
+  function buildFloatingNarratives() {
     const distributed = [
       { anchor: "#promo", copy: PRODUCT_FLOAT_TEXTS[0], family: "product", top: "16%", left: "68%" },
       { anchor: "#gear", copy: SPORT_FLOAT_TEXTS[0], family: "sport", top: "24%", left: "72%" },
@@ -132,13 +180,15 @@
       phrase.style.top = item.top;
       phrase.style.left = item.left;
       phrase.textContent = item.copy;
-      layer.appendChild(phrase);
+      const overlay = ensureSectionOverlay(item.anchor);
+      if (overlay) overlay.appendChild(phrase);
     });
 
     const winnerText = document.querySelector(".winner-banner__text");
     if (winnerText) winnerText.textContent = WINNER_SLOGAN;
   }
 
+  distributeSectionOverlays();
   buildFloatingNarratives();
 
   // PER-FEATURE SAFETY NET — same pattern as effects.js's safeRun. Before
@@ -375,6 +425,7 @@
 
   function revealHero() {
     safeRun("heroIntro", runHeroIntro);
+    safeRun("heroCopyIntro", runHeroCopyIntro);
     safeRun("heroFlash", runHeroFlash);
   }
 
@@ -607,20 +658,13 @@
      lives fixed in the background instead of inside this section).
      --------------------------------------------------------- */
   function runHeroIntro() {
-    const lines = document.querySelectorAll(".hero__title .line span");
-    const foot = document.querySelector(".hero__foot");
-    const season = document.querySelector(".hero__season-chip");
     const orbitals = document.querySelectorAll(".hero__orbital");
+    const stage = document.querySelector(".hero__stage");
+    const flash = document.querySelector(".hero__flash");
 
-    gsap.set(lines, { yPercent: 120 });
-    gsap.set(foot, { opacity: 0, y: 20, filter: "blur(8px)" });
-    if (season) gsap.set(season, { opacity: 0, y: 18, scale: 0.96, filter: "blur(8px)" });
     if (orbitals.length) gsap.set(orbitals, { opacity: 0, y: 28, scale: 0.92, filter: "blur(10px)" });
 
     if (reduceMotion) {
-      gsap.set(lines, { yPercent: 0 });
-      gsap.set(foot, { opacity: 1, y: 0, filter: "blur(0px)" });
-      if (season) gsap.set(season, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" });
       if (orbitals.length) gsap.set(orbitals, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" });
       return;
     }
@@ -629,22 +673,49 @@
       scrollTrigger: {
         trigger: ".hero",
         start: "top top",
-        end: "+=50%",
+        end: "+=42%",
         scrub: true,
       },
     });
-    // reveal: 0 -> 12% — lands right as the flash sequence (see
-    // runHeroFlash) finishes its last line
-    if (season) {
-      tl.to(season, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", ease: "power2.out", duration: 0.08 }, 0.01);
+    tl.to(orbitals, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", ease: "power2.out", duration: 0.14, stagger: 0.03 }, 0.08)
+      .to(orbitals, { opacity: 0, y: -16, scale: 0.9, filter: "blur(10px)", ease: "power2.in", duration: 0.16, stagger: 0.02 }, 0.26);
+
+    if (stage) {
+      tl.to(stage, { opacity: 0.16, ease: "power1.out", duration: 0.12 }, 0.22)
+        .to(stage, { opacity: 0, ease: "power2.in", duration: 0.18 }, 0.3);
     }
-    tl.to(lines, { yPercent: 0, stagger: 0.03, ease: "power2.out", duration: 0.1 }, 0.02)
-      .to(foot, { opacity: 1, y: 0, filter: "blur(0px)", ease: "power2.out", duration: 0.08 }, 0.1)
-      .to(orbitals, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", ease: "power2.out", duration: 0.12, stagger: 0.03 }, 0.08)
-      // hold, fully readable: 12% -> 32%
-      .to(".hero__content", { opacity: 1, duration: 0.2 }, 0.12)
-      // disappear as the next section (galaxy) rises into view: 32% -> 62%
-      .to(".hero__content", { opacity: 0, y: -40, scale: 0.96, filter: "blur(8px)", ease: "power2.in", duration: 0.3 }, 0.32);
+
+    if (flash) {
+      tl.to(flash, { opacity: 0, ease: "none", duration: 0.12 }, 0.22);
+    }
+  }
+
+  function runHeroCopyIntro() {
+    const section = document.querySelector(".hero-copy");
+    const lines = document.querySelectorAll(".hero-copy .hero__title .line span");
+    const foot = document.querySelector(".hero-copy .hero__foot");
+    if (!section || !lines.length || !foot) return;
+
+    gsap.set(lines, { yPercent: 120 });
+    gsap.set(foot, { opacity: 0, y: 20, filter: "blur(8px)" });
+
+    if (reduceMotion) {
+      gsap.set(lines, { yPercent: 0 });
+      gsap.set(foot, { opacity: 1, y: 0, filter: "blur(0px)" });
+      return;
+    }
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: section,
+        start: "top 82%",
+        end: "top 36%",
+        scrub: true
+      }
+    });
+
+    tl.to(lines, { yPercent: 0, stagger: 0.03, ease: "power2.out", duration: 0.16 }, 0)
+      .to(foot, { opacity: 1, y: 0, filter: "blur(0px)", ease: "power2.out", duration: 0.14 }, 0.08);
   }
 
   /* ---------------------------------------------------------
@@ -790,19 +861,8 @@
      drift out of sync again as sections get added/reordered.
      --------------------------------------------------------- */
   safeRun("floatwordsGate", function () {
-    const layer = document.querySelector(".floatwords");
-    if (!layer || !document.querySelector(".hero")) return;
-    gsap.set(layer, { opacity: reduceMotion ? 1 : 0 });
-    if (reduceMotion) return;
-    gsap.to(layer, {
-      opacity: 1,
-      ease: "none",
-      scrollTrigger: {
-        trigger: ".hero",
-        start: "top bottom",
-        end: "top 70%",
-        scrub: true,
-      },
+    gsap.utils.toArray(".section-overlay").forEach((layer) => {
+      gsap.set(layer, { opacity: 1 });
     });
   });
 
@@ -824,25 +884,12 @@
 
     // word text -> which section anchor triggers it. Falls back to
     // skipping a word gracefully if a section id ever goes missing.
-    const ANCHORS = {
-      Speed: "#promo",
-      Power: "#gear",
-      Control: "#numbers",
-      Precision: "#training",
-      Teamwork: "#match",
-      Passion: "#fan",
-      Discipline: "#news",
-      Performance: "#community",
-      Confidence: ".statement",
-      Victory: "#join",
-    };
-
     // Three visibly different reveal recipes, cycled by index so
     // adjacent words never move identically: "glow" (blur+scale, the
     // original), "rise" (drifts up out of a soft blur, no scale pop),
     // "spin" (rotates in off-axis while scaling, more physical/tumbling).
     words.forEach((word, i) => {
-      const anchorSel = ANCHORS[word.textContent.trim()];
+      const anchorSel = FLOAT_WORD_ANCHORS[word.textContent.trim()];
       const anchor = anchorSel && document.querySelector(anchorSel);
       const variant = WORD_VARIANTS[i % WORD_VARIANTS.length];
 
@@ -1209,18 +1256,32 @@
       el.style.left = el.dataset.baseLeft;
       el.style.top = el.dataset.baseTop;
 
+      const container = el.closest(".section-overlay");
+      const containerRect = container ? container.getBoundingClientRect() : {
+        left: 0,
+        top: 0,
+        right: window.innerWidth,
+        bottom: window.innerHeight,
+        width: window.innerWidth,
+        height: window.innerHeight
+      };
       const rect = el.getBoundingClientRect();
       let dx = 0;
       let dy = 0;
 
-      if (rect.left < safeSide) dx = safeSide - rect.left;
-      if (rect.right > window.innerWidth - safeSide) dx = (window.innerWidth - safeSide) - rect.right;
-      if (rect.top < safeTop) dy = safeTop - rect.top;
-      if (rect.bottom > window.innerHeight - safeBottom) dy = (window.innerHeight - safeBottom) - rect.bottom;
+      const minLeft = Math.max(containerRect.left + safeSide, safeSide);
+      const maxRight = Math.min(containerRect.right - safeSide, window.innerWidth - safeSide);
+      const minTop = Math.max(containerRect.top + safeTop * 0.15, safeTop);
+      const maxBottom = Math.min(containerRect.bottom - safeBottom, window.innerHeight - safeBottom);
+
+      if (rect.left < minLeft) dx = minLeft - rect.left;
+      if (rect.right > maxRight) dx = maxRight - rect.right;
+      if (rect.top < minTop) dy = minTop - rect.top;
+      if (rect.bottom > maxBottom) dy = maxBottom - rect.bottom;
 
       if (dx || dy) {
-        el.style.left = rect.left + rect.width / 2 + dx + "px";
-        el.style.top = rect.top + rect.height / 2 + dy + "px";
+        el.style.left = ((rect.left + rect.width / 2 + dx) - containerRect.left) + "px";
+        el.style.top = ((rect.top + rect.height / 2 + dy) - containerRect.top) + "px";
       }
     });
   }
@@ -1275,7 +1336,7 @@
     });
 
     function metrics() {
-      const viewportWidth = viewport.clientWidth;
+      const viewportWidth = viewport.clientWidth * 0.5;
       const firstCardWidth = cards[0]?.offsetWidth || 0;
       const sidePad = Math.max(24, viewportWidth * 0.08);
       const startX = viewportWidth + sidePad;
@@ -1319,9 +1380,9 @@
 
         const normalized = gsap.utils.clamp(-1, 1, delta / (data.viewportWidth * 0.56));
         const centerPull = 1 - Math.min(1, Math.abs(normalized));
-        const scale = 0.82 + centerPull * 0.22;
-        const opacity = Math.min(1, 0.26 + centerPull * 0.82);
-        const blur = (1 - centerPull) * opts.maxBlur;
+        const scale = 0.82 + centerPull * 0.26;
+        const opacity = Math.min(1, 0.26 + centerPull * 0.84);
+        const blur = (1 - centerPull) * opts.maxBlur*2;
 
         gsap.set(card, {
           x: normalized * opts.sideDrift,
@@ -1352,13 +1413,13 @@
       anticipatePin: 1,
       scrub: true,
       onUpdate: (self) => {
-        renderByProgress(self.progress);
+        renderByProgress(self.progress); // render the carousel track/cards
         if (header) {
           gsap.set(header, {
-            xPercent: 16 - self.progress * 34,
+            xPercent: 86 - self.progress * 124,
             y: 0,
-            opacity: 0.42 + self.progress * 0.58,
-            filter: "blur(" + ((1 - self.progress) * 8).toFixed(2) + "px)"
+            opacity: 0.82 + self.progress * 0.58,
+            filter: "blur(" + ((1 - self.progress) * 2).toFixed(2) + "px)"
           });
         }
       }
@@ -1412,42 +1473,7 @@
       ScrollTrigger.create({
         trigger: hero,
         start: "top top",
-        end: "+=70%",
-        pin: true,
-        anticipatePin: 1,
-        pinSpacing: true
-      });
-    }
-
-    gsap.utils.toArray(".feature").forEach((section) => {
-      ScrollTrigger.create({
-        trigger: section,
-        start: "top top",
-        end: "+=38%",
-        pin: true,
-        anticipatePin: 1,
-        pinSpacing: true
-      });
-    });
-
-    const statement = document.querySelector(".statement");
-    if (statement) {
-      ScrollTrigger.create({
-        trigger: statement,
-        start: "top top",
-        end: "+=22%",
-        pin: true,
-        anticipatePin: 1,
-        pinSpacing: true
-      });
-    }
-
-    const cta = document.querySelector(".cta");
-    if (cta) {
-      ScrollTrigger.create({
-        trigger: cta,
-        start: "top top",
-        end: "+=28%",
+        end: "+=42%",
         pin: true,
         anticipatePin: 1,
         pinSpacing: true

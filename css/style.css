@@ -192,15 +192,10 @@ body.cursor-hover .cursor-ring{
    that fade read as "glowing" rather than a flat cross-fade.
    ========================================================= */
 .floatwords{
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  overflow: hidden;
+  display: none;
 }
 .floatphrase-layer{
-  position: absolute;
-  inset: 0;
+  display: none;
 }
 .floatwords__smoke{
   position: absolute;
@@ -208,6 +203,30 @@ body.cursor-hover .cursor-ring{
   width: 100%;
   height: 100%;
   display: block;
+}
+.section-overlay{
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+.hero .section-overlay{ z-index: 1; }
+.cta .section-overlay{ z-index: 3; }
+
+.hero,
+.hero-copy,
+.galaxy,
+.feature,
+.stats,
+.quote-carousel,
+.flags-carousel,
+.ball-gallery,
+.statement,
+.cta{
+  position: relative;
+  isolation: isolate;
 }
 .floatword{
   position: absolute;
@@ -693,10 +712,17 @@ body.cursor-hover .cursor-ring{
   position: relative;
   min-height: 100vh;
   min-height: 100svh;
+  overflow: hidden;
+}
+.hero-copy{
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: flex-end;
-  padding-bottom: 64px;
+  padding: 0 0 64px;
   overflow: hidden;
+  z-index: 4;
 }
 .hero__stage{
   position: absolute;
@@ -713,8 +739,9 @@ body.cursor-hover .cursor-ring{
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 900px;
+  max-width: min(900px, calc(100vw - (var(--gutter) * 2)));
   padding: 0 var(--gutter);
+  margin-left: 0;
 }
 /* fancy colorful blurred fog sitting behind the hero copy — same
    family of effect as the floating-word backdrops, sized to the
@@ -813,7 +840,7 @@ body.cursor-hover .cursor-ring{
   font-size: clamp(40px, 10vw, 80px);
   overflow: hidden;
   color: var(--ink);
-  max-width: 10ch;
+  max-width: min(10ch, 100%);
 }
 .hero__title .line{
   display: block;
@@ -840,7 +867,7 @@ body.cursor-hover .cursor-ring{
   flex-wrap: wrap;
 }
 .hero__desc{
-  max-width: 440px;
+  max-width: min(440px, 100%);
   font-size: 17px;
   line-height: 1.6;
   color: var(--ink-dim);
@@ -887,10 +914,10 @@ body.cursor-hover .cursor-ring{
   transform-origin: 50% 50%;
   will-change: transform, opacity, filter;
 }
-.hero__orbital--left{ left: 50%; bottom: 8%; }
-.hero__orbital--top{ right: 50%; bottom: 2%; }
-.hero__orbital--right{ right: 50%; bottom: 10%; }
-.hero__orbital--bottom{ left: 50%; bottom: -4%;  }
+.hero__orbital--left{ left: 50%; bottom: 12%; }
+.hero__orbital--top{ right: 50%; bottom: 7%; }
+.hero__orbital--right{ right: 50%; bottom: 14%; }
+.hero__orbital--bottom{ left: 50%; bottom: 2%;  }
 .hero__orbital-copy{
   font-family: var(--font-mono);
   font-size: 11px;
@@ -1119,6 +1146,14 @@ body.cursor-hover .cursor-ring{
   display: flex;
   align-items: center;
   overflow: hidden;
+  z-index: 4;
+}
+.feature > .wrap{
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(16px, 2vw, 28px);
+  align-items: center;
 }
 .feature__ambient{
   position: absolute;
@@ -1128,7 +1163,13 @@ body.cursor-hover .cursor-ring{
   z-index: 0;
   pointer-events: none;
 }
-.feature__wrap{ position: relative; z-index: 1; max-width: 720px; }
+.feature__wrap{
+  position: relative;
+  z-index: 1;
+  grid-column: 2 / span 6;
+  width: 100%;
+  max-width: none;
+}
 .feature__wrap::before{
   content:'';
   position: absolute;
@@ -1139,7 +1180,10 @@ body.cursor-hover .cursor-ring{
   filter: blur(46px);
   pointer-events: none;
 }
-.feature--reverse .feature__wrap{ margin-left: auto; text-align: right; }
+.feature--reverse .feature__wrap{
+  grid-column: 6 / span 6;
+  text-align: right;
+}
 .feature--reverse .feature__list li{ flex-direction: row-reverse; }
 .feature--reverse .eyebrow{ justify-content: flex-end; }
 .feature--reverse .eyebrow::before{ order: 2; }
@@ -1189,7 +1233,12 @@ body.cursor-hover .cursor-ring{
 .stats{
   position: relative;
   padding: clamp(90px, 10vw, 140px) 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  z-index: 4;
 }
+.stats .wrap{ width: 100%; }
 .stats__intro{
   position: relative;
   z-index: 1;
@@ -1254,6 +1303,7 @@ body.cursor-hover .cursor-ring{
 .flags-carousel{
   position: relative;
   padding: clamp(0px, 12vw, 160px) 0;
+  z-index: 4;
 
 }
 .quote-carousel__wrap,
@@ -1371,10 +1421,7 @@ body.cursor-hover .cursor-ring{
   inset: -0.28em -0.36em;
   z-index: -1;
   border-radius: 28px;
-  background:
-    radial-gradient(58% 58% at 22% 24%, rgba(14, 28, 44, 0.94), transparent 72%),
-    radial-gradient(64% 64% at 78% 74%, rgba(16, 12, 34, 0.9), transparent 74%),
-    linear-gradient(135deg, rgba(4, 8, 16, 0.76), rgba(5, 10, 18, 0.4));
+  
   filter: blur(22px);
   -webkit-mask-image: radial-gradient(closest-side, black 56%, transparent 96%);
   mask-image: radial-gradient(closest-side, black 56%, transparent 96%);
@@ -1513,11 +1560,12 @@ body.cursor-hover .cursor-ring{
   position: relative;
   min-height: 100vh;
   overflow: clip;
+  z-index: 4;
 }
 .ball-gallery__wrap{
   position: relative;
   z-index: 2;
-  min-height: 100vh;
+  min-height: 60vh;
 }
 .ball-gallery__stage{
   position: absolute;
@@ -1600,7 +1648,7 @@ body.cursor-hover .cursor-ring{
 .ball-gallery__hud{
   position: absolute;
   right: 0;
-  bottom: clamp(42px, 7vh, 78px);
+  bottom: clamp(92px, 12vh, 138px);
   display: grid;
   gap: 14px;
   justify-items: end;
@@ -1660,7 +1708,7 @@ body.cursor-hover .cursor-ring{
     position: relative;
     right: auto;
     bottom: auto;
-    margin-top: 52vh;
+    margin-top: 46vh;
     justify-items: stretch;
   }
   .ball-gallery__meta{ min-width: 0; }
@@ -1672,6 +1720,7 @@ body.cursor-hover .cursor-ring{
 .statement{
   padding: clamp(120px, 18vw, 220px) 0;
   text-align: center;
+  z-index: 4;
 }
 .statement .wrap{ position: relative; z-index: 1; }
 .statement .wrap::before{
@@ -1713,6 +1762,7 @@ body.cursor-hover .cursor-ring{
   position: relative;
   overflow: hidden;
   padding: clamp(100px, 14vw, 180px) 0;
+  z-index: 4;
 }
 .cta__sparkles{
   position: absolute;
@@ -1947,7 +1997,14 @@ body.cursor-hover .cursor-ring{
    RESPONSIVE
    ========================================================= */
 @media (max-width: 900px){
-  .feature--reverse .feature__wrap{ margin-left: 0; text-align: left; }
+  .feature > .wrap{
+    grid-template-columns: 1fr;
+  }
+  .feature__wrap,
+  .feature--reverse .feature__wrap{
+    grid-column: 1;
+    text-align: left;
+  }
   .feature--reverse .feature__body{ margin-left: 0; }
   .feature--reverse .feature__list li{ flex-direction: row; }
   .feature--reverse .eyebrow{ justify-content: flex-start; }

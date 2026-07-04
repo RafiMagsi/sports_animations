@@ -87,7 +87,7 @@
      view, holds, and dissolves back out — see main.js's floating-word
      timeline and effects.js's setupFloatingSmoke for the drifting haze
      behind them. Depth is faked with size + blur, not real 3D. ============ -->
-<div class="floatwords" aria-hidden="true">
+<div class="floatwords" aria-hidden="true" hidden>
   <canvas class="floatwords__smoke"></canvas>
   <span class="floatword" data-depth="near" style="top:24%; left:20%;">Speed</span>
   <span class="floatword" data-depth="far" style="top:66%; left:66%;">Power</span>
@@ -144,23 +144,6 @@
       <span class="hero__flash-line">Create history.</span>
       <span class="hero__flash-line">Road to FIFA World Cup 2026.</span>
     </div>
-    <div class="hero__content">
-      <h1 class="hero__title display">
-        <span class="line"><span>The Future of</span></span>
-        <span class="line line--accent"><span>Football</span></span>
-        <span class="line"><span>Starts Here</span></span>
-      </h1>
-      <div class="hero__foot">
-        <p class="hero__desc">Gear up for the 2026 World Cup season with premium football gear, training programs, and fan collections.</p>
-        <div class="hero__cta-row">
-          <a href="#gear" class="btn">Explore Collection</a>
-          <div class="hero__scroll">
-            <span>Scroll</span>
-            <div class="hero__scroll-line"></div>
-          </div>
-        </div>
-      </div>
-    </div>
     <div class="hero__orbitals" aria-hidden="true">
         <div class="hero__orbital hero__orbital--bottom" data-depth="0.35">
           <span class="hero__orbital-ball"></span>
@@ -179,6 +162,26 @@
           <span class="hero__orbital-copy">Control. Precision. Speed.</span>
         </div>
       </div>
+  </section>
+
+  <section class="hero-copy" aria-labelledby="hero-copy-title">
+    <div class="hero__content">
+      <h1 class="hero__title display" id="hero-copy-title">
+        <span class="line"><span>The Future of</span></span>
+        <span class="line line--accent"><span>Football</span></span>
+        <span class="line"><span>Starts Here</span></span>
+      </h1>
+      <div class="hero__foot">
+        <p class="hero__desc">Gear up for the 2026 World Cup season with premium football gear, training programs, and fan collections.</p>
+        <div class="hero__cta-row">
+          <a href="#gear" class="btn">Explore Collection</a>
+          <div class="hero__scroll">
+            <span>Scroll</span>
+            <div class="hero__scroll-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- ============ SPECIAL PROMO — repurposes the galaxy particle-converge
