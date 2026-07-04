@@ -30,18 +30,18 @@
      gradient text just reads as "dimming the text", which is the exact
      complaint this is fixing — the color blooms alone (helped by the
      blur) already give enough contrast against busy video footage. */
-  --text-fog: radial-gradient(62% 62% at 26% 22%, rgba(52,214,255,0.44), transparent 68%),
+  /* --text-fog: radial-gradient(62% 62% at 26% 22%, rgba(52,214,255,0.44), transparent 68%),
               radial-gradient(58% 58% at 78% 62%, rgba(143,111,255,0.44), transparent 68%),
               radial-gradient(50% 50% at 42% 88%, rgba(255,121,205,0.34), transparent 70%),
-              rgba(2,4,10,0.58);
+              rgba(2,4,10,0.58); */
   /* a bigger/bolder version (larger blooms, still a light dark base)
      for the page-wide floating words/phrases and hero flash lines,
      which need to read as an unmistakable colorful cloud, not a dim
      patch, over both busy video and pure black intro/galaxy scenes */
-  --text-fog-strong: radial-gradient(65% 65% at 24% 20%, rgba(52,214,255,0.56), transparent 70%),
+  /* --text-fog-strong: radial-gradient(65% 65% at 24% 20%, rgba(52,214,255,0.56), transparent 70%),
               radial-gradient(60% 60% at 80% 60%, rgba(143,111,255,0.6), transparent 70%),
               radial-gradient(52% 52% at 40% 90%, rgba(255,121,205,0.48), transparent 72%),
-              rgba(2,4,10,0.72);
+              rgba(2,4,10,0.72); */
 
   /* text lives on video now, not on a flat page background — light
      ink + shadow reads regardless of what's playing behind it */
@@ -240,6 +240,9 @@ body.cursor-hover .cursor-ring{
   -webkit-text-stroke: 0;
   text-shadow: none;
   filter: none;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
 }
 /* sized big per feedback, but capped so even a long word (Discipline,
    Performance) at a corner position can't push past the viewport edge
@@ -291,6 +294,9 @@ body.cursor-hover .cursor-ring{
      already had this override; this one was missed. */
   text-shadow: none;
   filter: none;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
 }
 .floatphrase::before{
   content:'';
@@ -305,6 +311,7 @@ body.cursor-hover .cursor-ring{
   opacity: 0.95;
   filter: blur(26px);
   pointer-events: none;
+  transition: opacity .45s var(--ease), transform .45s var(--ease), filter .45s var(--ease);
 }
 .floatphrase[data-family="sport"]::before{
   background:
@@ -772,6 +779,9 @@ body.cursor-hover .cursor-ring{
   /* one tight dark shadow for depth only — the color/glow now comes
      from the ::before fog patch behind it, not stacked on the letters */
   filter: drop-shadow(0 2px 12px rgba(0,0,0,0.6));
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
 }
 .hero__flash-line::before{
   content:'';
@@ -829,6 +839,14 @@ body.cursor-hover .cursor-ring{
   pointer-events: none;
 }
 .hero__orbital{
+  --orbital-anchor-x: 0px;
+  --orbital-anchor-y: 0px;
+  --orbital-scroll-x: 0px;
+  --orbital-scroll-y: 0px;
+  --orbital-mouse-x: 0px;
+  --orbital-mouse-y: 0px;
+  --orbital-scale: 1;
+  --orbital-rotate: 0deg;
   position: absolute;
   display: inline-flex;
   align-items: center;
@@ -845,10 +863,21 @@ body.cursor-hover .cursor-ring{
     0 14px 42px rgba(0,0,0,0.22);
   backdrop-filter: blur(16px) saturate(1.08);
   -webkit-backdrop-filter: blur(16px) saturate(1.08);
+  transform:
+    translate3d(
+      calc(var(--orbital-anchor-x) + var(--orbital-scroll-x) + var(--orbital-mouse-x)),
+      calc(var(--orbital-anchor-y) + var(--orbital-scroll-y) + var(--orbital-mouse-y)),
+      0
+    )
+    scale(var(--orbital-scale))
+    rotate(var(--orbital-rotate));
+  transform-origin: 50% 50%;
+  will-change: transform, opacity, filter;
 }
-.hero__orbital--left{ left: -2%; top: 8%; }
-.hero__orbital--top{ right: 8%; top: -4%; }
-.hero__orbital--right{ right: -1%; bottom: 10%; }
+.hero__orbital--left{ left: 50%; bottom: 8%; }
+.hero__orbital--top{ right: 50%; bottom: 2%; }
+.hero__orbital--right{ right: 50%; bottom: 10%; }
+.hero__orbital--bottom{ left: 50%; bottom: -4%;  }
 .hero__orbital-copy{
   font-family: var(--font-mono);
   font-size: 11px;
@@ -1211,8 +1240,8 @@ body.cursor-hover .cursor-ring{
 .quote-carousel,
 .flags-carousel{
   position: relative;
-  padding: clamp(100px, 12vw, 160px) 0;
-  overflow: clip;
+  padding: clamp(0px, 12vw, 160px) 0;
+
 }
 .quote-carousel__wrap,
 .flags-carousel__wrap{
@@ -1221,25 +1250,15 @@ body.cursor-hover .cursor-ring{
   min-height: clamp(560px, 76vh, 860px);
   display: grid;
   align-content: center;
-  overflow: clip;
+
 }
 .quote-carousel__header,
 .flags-carousel__header{
   position: relative;
-  z-index: 1;
-  max-width: 620px;
+  z-index: 100;
   margin-bottom: 34px;
 }
-.quote-carousel__header::before,
-.flags-carousel__header::before{
-  content:'';
-  position: absolute;
-  inset: -16% -10%;
-  z-index: -1;
-  border-radius: 44px;
-  background: var(--text-fog);
-  filter: blur(42px);
-}
+
 .quote-carousel__title,
 .flags-carousel__title{
   font-size: clamp(48px, 8.8vw, 88px);
@@ -1247,9 +1266,9 @@ body.cursor-hover .cursor-ring{
 }
 .quote-carousel__viewport,
 .flags-carousel__viewport{
-  overflow: clip;
+
   position: relative;
-  perspective: 1400px;
+  perspective: 1750px;
   perspective-origin: 50% 40%;
   padding: 28px clamp(44px, 7vw, 110px) 44px;
 }

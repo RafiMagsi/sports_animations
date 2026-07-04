@@ -37,7 +37,6 @@
     "Great teams move together as one.",
     "Control the ball. Control the game.",
     "Confidence is earned through preparation.",
-    "Pressure creates champions.",
     "The best players see opportunities before others see space.",
     "Success comes from thousands of small improvements.",
     "The crowd celebrates goals. Players remember the sacrifices.",
@@ -84,12 +83,14 @@
 
   const HERO_FLOAT_TEXTS = [
     "World Cup Season 2026",
-    "The Future of Football Starts Here.",
     "Gear up for the 2026 World Cup season with premium football gear, training programs, and fan collections.",
     "Explore Collection",
     "Scroll"
   ];
   const WINNER_SLOGAN = "Play Like a Champion Today.";
+  const PHRASE_VARIANTS = ["drift", "slide", "zoom", "collide", "flip", "bounce", "smoke"];
+  const WORD_VARIANTS = ["glow", "rise", "spin", "zoom", "collide", "flip", "bounce", "smoke"];
+  const HERO_FLASH_VARIANTS = ["zoom", "flip", "collide", "bounce", "smoke"];
   function floatBlur(px) {
     return px > 0 ? "blur(" + px + "px)" : "none";
   }
@@ -114,7 +115,7 @@
 
     distributed.forEach((item, index) => {
       const phrase = document.createElement("p");
-      const style = index % 3 === 0 ? "drift" : "slide";
+      const style = PHRASE_VARIANTS[index % PHRASE_VARIANTS.length];
       const side = index % 2 === 0 ? "left" : "right";
 
       phrase.className = "floatphrase";
@@ -185,6 +186,39 @@
         toVars = { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" };
         exitVars = { opacity: 0, scale: 1.22, filter: "blur(10px)" };
         entranceEase = "back.out(1.6)";
+      } else if (variant === "zoom") {
+        gsap.set(el, { transformPerspective: 1100, transformOrigin: "50% 50%" });
+        fromVars = { opacity: 0, z: -220, scale: 0.58, filter: "blur(16px)" };
+        toVars = { opacity: 1, z: 0, scale: 1, filter: "blur(0px)" };
+        exitVars = { opacity: 0, z: 120, y: -rise * 0.45, scale: 1.08, filter: "blur(12px)" };
+        entranceEase = "power3.out";
+      } else if (variant === "collide") {
+        const dir = i % 2 === 0 ? 1 : -1;
+        gsap.set(el, { transformPerspective: 1100, transformOrigin: dir > 0 ? "0% 50%" : "100% 50%" });
+        fromVars = { opacity: 0, x: 110 * dir, scaleX: 1.14, scaleY: 0.84, rotateZ: 4 * dir, filter: "blur(14px)" };
+        toVars = { opacity: 1, x: 0, scaleX: 1, scaleY: 1, rotateZ: 0, filter: "blur(0px)" };
+        exitVars = { opacity: 0, x: -82 * dir, scaleX: 0.96, scaleY: 1.05, rotateZ: -3 * dir, filter: "blur(12px)" };
+        entranceEase = "power4.out";
+      } else if (variant === "flip") {
+        const dir = i % 2 === 0 ? 1 : -1;
+        gsap.set(el, { transformPerspective: 1300, transformOrigin: "50% 50%" });
+        fromVars = { opacity: 0, y: rise * 0.5, rotateY: 84 * dir, rotateX: -10, scale: 0.86, filter: "blur(14px)" };
+        toVars = { opacity: 1, y: 0, rotateY: 0, rotateX: 0, scale: 1, filter: "blur(0px)" };
+        exitVars = { opacity: 0, y: -rise * 0.5, rotateY: -70 * dir, rotateX: 8, scale: 1.08, filter: "blur(12px)" };
+        entranceEase = "power3.out";
+      } else if (variant === "bounce") {
+        gsap.set(el, { transformPerspective: 1000, transformOrigin: "50% 100%" });
+        fromVars = { opacity: 0, y: rise * 1.8, scaleY: 1.24, scaleX: 0.84, filter: "blur(13px)" };
+        toVars = { opacity: 1, y: 0, scaleY: 1, scaleX: 1, filter: "blur(0px)" };
+        exitVars = { opacity: 0, y: -rise * 0.5, scaleY: 0.92, scaleX: 1.05, filter: "blur(11px)" };
+        entranceEase = "back.out(1.55)";
+      } else if (variant === "smoke") {
+        const dir = i % 2 === 0 ? 1 : -1;
+        gsap.set(el, { transformPerspective: 1000, transformOrigin: "50% 50%" });
+        fromVars = { opacity: 0, y: rise * 0.65, x: 26 * dir, skewX: -8 * dir, scale: 0.94, filter: "blur(24px)" };
+        toVars = { opacity: 1, y: 0, x: 0, skewX: 0, scale: 1, filter: "blur(0px)" };
+        exitVars = { opacity: 0, y: -rise * 0.42, x: 20 * dir, skewX: 8 * dir, scale: 1.08, filter: "blur(20px)" };
+        entranceEase = "power2.out";
       } else if (variant === "swing") {
         gsap.set(el, { transformPerspective: 700, transformOrigin: "50% 100%" });
         fromVars = { opacity: 0, y: rise, rotate: i % 2 === 0 ? -9 : 9, filter: "blur(9px)" };
@@ -232,21 +266,56 @@
      "amazing" materialize feel than a flat fade for the few large
      headlines on the page (feature titles, galaxy title).
      --------------------------------------------------------- */
-  function charReveal(el) {
+  function charReveal(el, opts) {
     if (!el || reduceMotion) return;
+    opts = opts || {};
+    const variant = opts.variant || "zoom";
     const split = new SplitText(el, { type: "chars", charsClass: "ch" });
     gsap.set(split.chars, { display: "inline-block", transformPerspective: 500 });
+
+    let fromVars;
+    let holdVars;
+    let exitVars;
+    let enterEase = "power2.out";
+    let exitEase = "power1.in";
+
+    if (variant === "flip") {
+      gsap.set(split.chars, { transformPerspective: 1400, transformOrigin: "50% 50%" });
+      fromVars = { opacity: 0, yPercent: 10, rotateY: -90, rotateX: 12, scale: 0.82, filter: "blur(13px)" };
+      holdVars = { opacity: 1, yPercent: 0, rotateY: 0, rotateX: 0, scale: 1, filter: "blur(0px)" };
+      exitVars = { opacity: 0, y: -26, rotateY: 68, rotateX: -8, scale: 1.06, filter: "blur(11px)" };
+    } else if (variant === "collide") {
+      gsap.set(split.chars, { transformPerspective: 1400, transformOrigin: "50% 50%" });
+      fromVars = { opacity: 0, xPercent: 34, scaleX: 1.18, scaleY: 0.84, rotateZ: 5, filter: "blur(12px)" };
+      holdVars = { opacity: 1, xPercent: 0, scaleX: 1, scaleY: 1, rotateZ: 0, filter: "blur(0px)" };
+      exitVars = { opacity: 0, x: -24, scaleX: 0.95, scaleY: 1.06, rotateZ: -4, filter: "blur(10px)" };
+      enterEase = "power4.out";
+    } else if (variant === "bounce") {
+      gsap.set(split.chars, { transformPerspective: 1200, transformOrigin: "50% 100%" });
+      fromVars = { opacity: 0, yPercent: 82, scaleY: 1.3, scaleX: 0.82, filter: "blur(12px)" };
+      holdVars = { opacity: 1, yPercent: 0, scaleY: 1, scaleX: 1, filter: "blur(0px)" };
+      exitVars = { opacity: 0, y: -24, scaleY: 0.9, scaleX: 1.06, filter: "blur(10px)" };
+      enterEase = "back.out(1.55)";
+    } else if (variant === "smoke") {
+      gsap.set(split.chars, { transformPerspective: 1200, transformOrigin: "50% 50%" });
+      fromVars = { opacity: 0, yPercent: 24, skewX: -10, scale: 0.92, filter: "blur(26px)" };
+      holdVars = { opacity: 1, yPercent: 0, skewX: 0, scale: 1, filter: "blur(0px)" };
+      exitVars = { opacity: 0, y: -20, skewX: 10, scale: 1.08, filter: "blur(22px)" };
+      exitEase = "power1.in";
+    } else {
+      gsap.set(split.chars, { transformPerspective: 1400, transformOrigin: "50% 50%" });
+      fromVars = { opacity: 0, z: -260, yPercent: 34, rotateX: -62, scale: 0.58, filter: "blur(16px)" };
+      holdVars = { opacity: 1, z: 0, yPercent: 0, rotateX: 0, scale: 1, filter: "blur(0px)" };
+      exitVars = { opacity: 0, z: 140, y: -26, rotateX: 14, scale: 1.06, filter: "blur(12px)" };
+    }
+
     gsap.fromTo(
       split.chars,
-      { opacity: 0, yPercent: 70, rotateX: -70, rotateZ: 6, filter: "blur(11px)" },
+      fromVars,
       {
-        opacity: 1,
-        yPercent: 0,
-        rotateX: 0,
-        rotateZ: 0,
-        filter: "blur(0px)",
+        ...holdVars,
         stagger: 0.015,
-        ease: "power2.out",
+        ease: enterEase,
         scrollTrigger: {
           trigger: el,
           start: "top 90%",
@@ -260,12 +329,8 @@
     // site instead of just sitting there once revealed
     gsap.set(el, { transformPerspective: 700 });
     gsap.to(el, {
-      opacity: 0,
-      y: -24,
-      rotateX: 16,
-      scale: 1.03,
-      filter: "blur(10px)",
-      ease: "power1.in",
+      ...exitVars,
+      ease: exitEase,
       scrollTrigger: {
         trigger: el,
         start: "top 8%",
@@ -621,9 +686,47 @@
     const step = 1 / lines.length;
     lines.forEach((line, i) => {
       const t0 = i * step;
-      tl.to(line, { opacity: 1, scale: 1, filter: "blur(0px)", duration: step * 0.4, ease: "power2.out" }, t0)
-        .to(line, { opacity: 1, scale: 1, filter: "blur(0px)", duration: step * 0.25 }, t0 + step * 0.4)
-        .to(line, { opacity: 0, scale: 1.15, filter: "blur(12px)", duration: step * 0.35, ease: "power2.in" }, t0 + step * 0.65);
+      const variant = HERO_FLASH_VARIANTS[i % HERO_FLASH_VARIANTS.length];
+      let fromVars;
+      let holdVars;
+      let exitVars;
+      let enterEase = "power2.out";
+      let leaveEase = "power2.in";
+
+      if (variant === "flip") {
+        gsap.set(line, { transformPerspective: 1600, transformOrigin: "50% 50%" });
+        fromVars = { opacity: 0, rotateY: i % 2 === 0 ? -88 : 88, rotateX: -12, scale: 0.82, filter: "blur(16px)" };
+        holdVars = { opacity: 1, rotateY: 0, rotateX: 0, scale: 1, filter: "blur(0px)" };
+        exitVars = { opacity: 0, rotateY: i % 2 === 0 ? 68 : -68, rotateX: 8, scale: 1.08, filter: "blur(12px)" };
+      } else if (variant === "collide") {
+        gsap.set(line, { transformPerspective: 1600, transformOrigin: i % 2 === 0 ? "0% 50%" : "100% 50%" });
+        fromVars = { opacity: 0, x: i % 2 === 0 ? 240 : -240, scaleX: 1.18, scaleY: 0.84, rotateZ: i % 2 === 0 ? -4 : 4, filter: "blur(16px)" };
+        holdVars = { opacity: 1, x: 0, scaleX: 1, scaleY: 1, rotateZ: 0, filter: "blur(0px)" };
+        exitVars = { opacity: 0, x: i % 2 === 0 ? -180 : 180, scaleX: 0.96, scaleY: 1.06, rotateZ: i % 2 === 0 ? 3 : -3, filter: "blur(12px)" };
+        enterEase = "power4.out";
+      } else if (variant === "bounce") {
+        gsap.set(line, { transformPerspective: 1600, transformOrigin: "50% 100%" });
+        fromVars = { opacity: 0, y: 120, scaleY: 1.3, scaleX: 0.82, filter: "blur(16px)" };
+        holdVars = { opacity: 1, y: 0, scaleY: 1, scaleX: 1, filter: "blur(0px)" };
+        exitVars = { opacity: 0, y: -72, scaleY: 0.9, scaleX: 1.08, filter: "blur(12px)" };
+        enterEase = "back.out(1.6)";
+      } else if (variant === "smoke") {
+        gsap.set(line, { transformPerspective: 1600, transformOrigin: "50% 50%" });
+        fromVars = { opacity: 0, y: 32, skewX: i % 2 === 0 ? -8 : 8, scale: 0.94, filter: "blur(30px)" };
+        holdVars = { opacity: 1, y: 0, skewX: 0, scale: 1, filter: "blur(0px)" };
+        exitVars = { opacity: 0, y: -38, skewX: i % 2 === 0 ? 9 : -9, scale: 1.1, filter: "blur(24px)" };
+        leaveEase = "power1.in";
+      } else {
+        gsap.set(line, { transformPerspective: 1600, transformOrigin: "50% 50%" });
+        fromVars = { opacity: 0, z: -260, scale: 0.56, filter: "blur(18px)" };
+        holdVars = { opacity: 1, z: 0, scale: 1, filter: "blur(0px)" };
+        exitVars = { opacity: 0, z: 180, scale: 1.14, filter: "blur(12px)" };
+      }
+
+      gsap.set(line, fromVars);
+      tl.to(line, { ...holdVars, duration: step * 0.4, ease: enterEase }, t0)
+        .to(line, { ...holdVars, duration: step * 0.25 }, t0 + step * 0.4)
+        .to(line, { ...exitVars, duration: step * 0.35, ease: leaveEase }, t0 + step * 0.65);
     });
   }
 
@@ -647,7 +750,7 @@
       .to(".galaxy__content", { opacity: 1, y: 0, duration: 0.16 }, 0.14) // hold, fully readable
       .to(".galaxy__content", { opacity: 0, y: -30, filter: "blur(8px)", duration: 0.16, ease: "power2.in" }, 0.3);
 
-    charReveal(document.querySelector(".galaxy__title"));
+    charReveal(document.querySelector(".galaxy__title"), { variant: "zoom" });
   }
   }); // end safeRun("galaxyText")
 
@@ -738,8 +841,6 @@
     // adjacent words never move identically: "glow" (blur+scale, the
     // original), "rise" (drifts up out of a soft blur, no scale pop),
     // "spin" (rotates in off-axis while scaling, more physical/tumbling).
-    const WORD_VARIANTS = ["glow", "rise", "spin"];
-
     words.forEach((word, i) => {
       const anchorSel = ANCHORS[word.textContent.trim()];
       const anchor = anchorSel && document.querySelector(anchorSel);
@@ -751,6 +852,31 @@
         fromVars = { opacity: 0, y: 46, filter: floatBlur(18) };
         holdVars = { opacity: 1, y: 0, filter: "none" };
         exitVars = { opacity: 0, y: -46, filter: floatBlur(16) };
+      } else if (variant === "zoom") {
+        gsap.set(word, { transformPerspective: 1100, transformOrigin: "50% 50%" });
+        fromVars = { opacity: 0, z: -320, scale: 0.44, filter: floatBlur(22) };
+        holdVars = { opacity: 1, z: 0, scale: 1, filter: "none" };
+        exitVars = { opacity: 0, z: 180, scale: 1.2, filter: floatBlur(16) };
+      } else if (variant === "collide") {
+        gsap.set(word, { transformPerspective: 1000, transformOrigin: i % 2 === 0 ? "0% 50%" : "100% 50%" });
+        fromVars = { opacity: 0, x: i % 2 === 0 ? 160 : -160, scaleX: 1.18, scaleY: 0.82, rotateZ: i % 2 === 0 ? -5 : 5, filter: floatBlur(18) };
+        holdVars = { opacity: 1, x: 0, scaleX: 1, scaleY: 1, rotateZ: 0, filter: "none" };
+        exitVars = { opacity: 0, x: i % 2 === 0 ? -120 : 120, scaleX: 0.92, scaleY: 1.08, rotateZ: i % 2 === 0 ? 4 : -4, filter: floatBlur(14) };
+      } else if (variant === "flip") {
+        gsap.set(word, { transformPerspective: 1200, transformOrigin: "50% 50%" });
+        fromVars = { opacity: 0, rotateY: i % 2 === 0 ? -86 : 86, rotateX: 14, scale: 0.82, filter: floatBlur(16) };
+        holdVars = { opacity: 1, rotateY: 0, rotateX: 0, scale: 1, filter: "none" };
+        exitVars = { opacity: 0, rotateY: i % 2 === 0 ? 74 : -74, rotateX: -10, scale: 1.08, filter: floatBlur(14) };
+      } else if (variant === "bounce") {
+        gsap.set(word, { transformPerspective: 900, transformOrigin: "50% 100%" });
+        fromVars = { opacity: 0, y: 96, scaleY: 1.28, scaleX: 0.82, filter: floatBlur(16) };
+        holdVars = { opacity: 1, y: 0, scaleY: 1, scaleX: 1, filter: "none" };
+        exitVars = { opacity: 0, y: -58, scaleY: 0.88, scaleX: 1.08, filter: floatBlur(14) };
+      } else if (variant === "smoke") {
+        gsap.set(word, { transformPerspective: 900, transformOrigin: "50% 50%" });
+        fromVars = { opacity: 0, y: 22, scale: 0.9, skewX: i % 2 === 0 ? -8 : 8, filter: floatBlur(28) };
+        holdVars = { opacity: 1, y: 0, scale: 1, skewX: 0, filter: "none" };
+        exitVars = { opacity: 0, y: -38, scale: 1.12, skewX: i % 2 === 0 ? 10 : -10, filter: floatBlur(24) };
       } else if (variant === "spin") {
         gsap.set(word, { transformPerspective: 600 });
         fromVars = { opacity: 0, scale: 0.6, rotate: -12, filter: floatBlur(14) };
@@ -831,11 +957,46 @@
         const holdAt = entry + segment * 0.34;
         const exitAt = entry + segment * 0.72;
 
+        let revealVars;
+        let holdVars;
+        let exitVars;
+
         if (style === "slide") {
-          gsap.set(phrase, { opacity: 0, x: 90 * side, rotation: 5 * side, filter: floatBlur(12) });
+          revealVars = { opacity: 0, x: 90 * side, rotation: 5 * side, filter: floatBlur(12) };
+          holdVars = { opacity: 1, x: 0, rotation: 0, filter: "none" };
+          exitVars = { opacity: 0, x: 130 * side, rotation: 7 * side, filter: floatBlur(12) };
+        } else if (style === "zoom") {
+          gsap.set(phrase, { transformPerspective: 1200, transformOrigin: "50% 50%" });
+          revealVars = { opacity: 0, z: -260, scale: 0.56, filter: floatBlur(18) };
+          holdVars = { opacity: 1, z: 0, scale: 1, filter: "none" };
+          exitVars = { opacity: 0, z: 180, scale: 1.12, filter: floatBlur(14) };
+        } else if (style === "collide") {
+          gsap.set(phrase, { transformPerspective: 1200, transformOrigin: side < 0 ? "0% 50%" : "100% 50%" });
+          revealVars = { opacity: 0, x: 150 * side, scaleX: 1.14, scaleY: 0.84, rotateZ: 4 * side, filter: floatBlur(16) };
+          holdVars = { opacity: 1, x: 0, scaleX: 1, scaleY: 1, rotateZ: 0, filter: "none" };
+          exitVars = { opacity: 0, x: -118 * side, scaleX: 0.94, scaleY: 1.06, rotateZ: -4 * side, filter: floatBlur(12) };
+        } else if (style === "flip") {
+          gsap.set(phrase, { transformPerspective: 1400, transformOrigin: "50% 50%" });
+          revealVars = { opacity: 0, rotateY: 84 * side, rotateX: -10, scale: 0.88, filter: floatBlur(15) };
+          holdVars = { opacity: 1, rotateY: 0, rotateX: 0, scale: 1, filter: "none" };
+          exitVars = { opacity: 0, rotateY: -70 * side, rotateX: 8, scale: 1.08, filter: floatBlur(13) };
+        } else if (style === "bounce") {
+          gsap.set(phrase, { transformPerspective: 1000, transformOrigin: "50% 100%" });
+          revealVars = { opacity: 0, y: 86, scaleY: 1.24, scaleX: 0.84, filter: floatBlur(16) };
+          holdVars = { opacity: 1, y: 0, scaleY: 1, scaleX: 1, filter: "none" };
+          exitVars = { opacity: 0, y: -42, scaleY: 0.9, scaleX: 1.06, filter: floatBlur(12) };
+        } else if (style === "smoke") {
+          gsap.set(phrase, { transformPerspective: 1000, transformOrigin: "50% 50%" });
+          revealVars = { opacity: 0, y: 18, x: 20 * side, skewX: -7 * side, scale: 0.92, filter: floatBlur(26) };
+          holdVars = { opacity: 1, y: 0, x: 0, skewX: 0, scale: 1, filter: "none" };
+          exitVars = { opacity: 0, y: -28, x: 28 * side, skewX: 8 * side, scale: 1.1, filter: floatBlur(24) };
         } else {
-          gsap.set(phrase, { opacity: 0, y: 26, skewY: 5, scale: 0.92, filter: floatBlur(14) });
+          revealVars = { opacity: 0, y: 26, skewY: 5, scale: 0.92, filter: floatBlur(14) };
+          holdVars = { opacity: 1, y: 0, skewY: 0, scale: 1, filter: "none" };
+          exitVars = { opacity: 0, y: -26, skewY: -5, scale: 0.94, filter: floatBlur(12) };
         }
+
+        gsap.set(phrase, revealVars);
         if (reduceMotion) return;
 
         const tl = gsap.timeline({
@@ -849,15 +1010,12 @@
           },
         });
 
-        if (style === "slide") {
-          tl.to(phrase, { opacity: 1, x: 0, rotation: 0, filter: "none", duration: segment * 0.24, ease: "power2.out" }, revealAt)
-            .to(phrase, { opacity: 1, duration: segment * 0.22 }, holdAt)
-            .to(phrase, { opacity: 0, x: 130 * side, rotation: 7 * side, filter: floatBlur(12), duration: segment * 0.24, ease: "power2.in" }, exitAt);
-        } else {
-          tl.to(phrase, { opacity: 1, y: 0, skewY: 0, scale: 1, filter: "none", duration: segment * 0.24, ease: "power2.out" }, revealAt)
-            .to(phrase, { opacity: 1, duration: segment * 0.22 }, holdAt)
-            .to(phrase, { opacity: 0, y: -26, skewY: -5, scale: 0.94, filter: floatBlur(12), duration: segment * 0.24, ease: "power2.in" }, exitAt);
-        }
+        const enterEase = style === "bounce" ? "back.out(1.5)" : style === "collide" ? "power4.out" : "power2.out";
+        const exitEase = style === "smoke" ? "power1.in" : "power2.in";
+
+        tl.to(phrase, { ...holdVars, duration: segment * 0.24, ease: enterEase }, revealAt)
+          .to(phrase, { ...holdVars, duration: segment * 0.22 }, holdAt)
+          .to(phrase, { ...exitVars, duration: segment * 0.24, ease: exitEase }, exitAt);
       });
     });
   });
@@ -880,23 +1038,103 @@
 
     const hero = document.querySelector(".hero");
     if (heroOrbitals.length && hero && !reduceMotion) {
-      heroOrbitals.forEach((node, index) => {
-        const span = 18 + index * 7;
-        const rise = index === 1 ? -10 : index === 2 ? 12 : -4;
-        gsap.set(node, { xPercent: span, yPercent: rise, rotate: 0 });
-        gsap.to(node, {
-          xPercent: -span,
-          yPercent: rise + (index === 1 ? 8 : -6),
-          rotate: index === 1 ? -4 : 4,
-          ease: "none",
-          scrollTrigger: {
-            trigger: hero,
-            start: "top 92%",
-            end: "bottom top",
-            scrub: true
+      const clusterOffsets = [
+        { x: -210, y: 68, scale: 0.98, rotate: -7 },
+        { x: -94, y: -56, scale: 0.94, rotate: -4 },
+        { x: 82, y: -76, scale: 0.92, rotate: 3 },
+        { x: 206, y: 46, scale: 1, rotate: 7 }
+      ];
+
+      function setOrbitalVars(node, values) {
+        gsap.set(node, {
+          "--orbital-scroll-x": values.x + "px",
+          "--orbital-scroll-y": values.y + "px",
+          "--orbital-scale": values.scale,
+          "--orbital-rotate": values.rotate + "deg",
+          opacity: values.opacity
+        });
+      }
+
+      function computeBaseShift(node, target) {
+        const heroRect = hero.getBoundingClientRect();
+        const rect = node.getBoundingClientRect();
+        const nodeCenterX = rect.left - heroRect.left + rect.width / 2;
+        const nodeCenterY = rect.top - heroRect.top + rect.height / 2;
+        const targetCenterX = heroRect.width / 2 + target.x;
+        const targetCenterY = heroRect.height * 0.5 + target.y;
+        return {
+          x: targetCenterX - nodeCenterX,
+          y: targetCenterY - nodeCenterY
+        };
+      }
+
+      function renderOrbitals(progress) {
+        heroOrbitals.forEach((node, index) => {
+          const cluster = clusterOffsets[index] || clusterOffsets[clusterOffsets.length - 1];
+          const shift = computeBaseShift(node, cluster);
+
+          let values;
+          if (progress < 0.42) {
+            const local = progress / 0.42;
+            const eased = gsap.parseEase("power3.out")(local);
+            values = {
+              x: shift.x * eased,
+              y: shift.y * eased,
+              scale: 0.72 + eased * (cluster.scale - 0.72),
+              rotate: cluster.rotate * eased,
+              opacity: 0.18 + eased * 0.82
+            };
+          } else if (progress < 0.76) {
+            const local = (progress - 0.42) / 0.34;
+            const wave = Math.sin(local * Math.PI * 2);
+            const sway = Math.cos(local * Math.PI * 1.5);
+            values = {
+              x: shift.x + wave * (12 + index * 3),
+              y: shift.y + sway * (10 + index * 2),
+              scale: cluster.scale + Math.sin(local * Math.PI) * 0.045,
+              rotate: cluster.rotate + wave * 5,
+              opacity: 1
+            };
+          } else {
+            const local = (progress - 0.76) / 0.24;
+            const eased = gsap.parseEase("power2.inOut")(local);
+            const exitX = shift.x + (index < 2 ? -82 : 82);
+            const exitY = shift.y + (index % 2 === 0 ? -54 : 54);
+            values = {
+              x: gsap.utils.interpolate(shift.x, exitX, eased),
+              y: gsap.utils.interpolate(shift.y, exitY, eased),
+              scale: gsap.utils.interpolate(cluster.scale, cluster.scale * 0.94, eased),
+              rotate: gsap.utils.interpolate(cluster.rotate, cluster.rotate + (index < 2 ? -6 : 6), eased),
+              opacity: gsap.utils.interpolate(1, 0.72, eased)
+            };
           }
+
+          setOrbitalVars(node, values);
+        });
+      }
+
+      heroOrbitals.forEach((node) => {
+        gsap.set(node, {
+          "--orbital-scroll-x": "0px",
+          "--orbital-scroll-y": "0px",
+          "--orbital-mouse-x": "0px",
+          "--orbital-mouse-y": "0px",
+          "--orbital-scale": 0.72,
+          "--orbital-rotate": "0deg",
+          opacity: 0.18
         });
       });
+
+      const orbitalTrigger = ScrollTrigger.create({
+        trigger: hero,
+        start: "top 92%",
+        end: "bottom top",
+        scrub: true,
+        onUpdate: (self) => renderOrbitals(self.progress)
+      });
+
+      renderOrbitals(orbitalTrigger.progress || 0);
+      window.addEventListener("resize", () => renderOrbitals(orbitalTrigger.progress || 0));
     }
 
     if (isTouch || reduceMotion) return;
@@ -911,6 +1149,16 @@
 
       container.querySelectorAll(selector).forEach((node) => {
         const depth = parseFloat(node.dataset.depth || "0.18");
+        if (selector === ".hero__orbital") {
+          gsap.to(node, {
+            "--orbital-mouse-x": (rx * 42 * depth).toFixed(2) + "px",
+            "--orbital-mouse-y": (ry * 34 * depth).toFixed(2) + "px",
+            duration: 0.5,
+            ease: "power2.out"
+          });
+          return;
+        }
+
         gsap.to(node, {
           x: rx * 42 * depth,
           y: ry * 34 * depth,
@@ -924,7 +1172,12 @@
       hero.addEventListener("mousemove", (event) => applyParallax(hero, ".hero__orbital", event));
       hero.addEventListener("mouseleave", () => {
         hero.querySelectorAll(".hero__orbital").forEach((node) => {
-          gsap.to(node, { x: 0, y: 0, duration: 0.5, ease: "power2.out" });
+          gsap.to(node, {
+            "--orbital-mouse-x": "0px",
+            "--orbital-mouse-y": "0px",
+            duration: 0.5,
+            ease: "power2.out"
+          });
         });
       });
     }
@@ -1179,9 +1432,20 @@
      body/list get the standard reveal-and-fade.
      --------------------------------------------------------- */
   safeRun("featureSections", function () {
-    document.querySelectorAll(".feature__title").forEach(charReveal);
-    revealAndFade(".feature__body, .feature__list", { variant: "tilt" });
-    revealAndFade(".feature .eyebrow", { variant: "swing" });
+    document.querySelectorAll(".feature").forEach((section, index) => {
+      const title = section.querySelector(".feature__title");
+      const body = section.querySelector(".feature__body");
+      const list = section.querySelector(".feature__list");
+      const eyebrow = section.querySelector(".eyebrow");
+      const titleVariant = ["zoom", "flip", "collide", "bounce", "smoke"][index % 5];
+      const bodyVariant = ["smoke", "collide", "flip", "bounce", "zoom"][index % 5];
+      const eyebrowVariant = ["flip", "collide", "bounce", "smoke", "zoom"][index % 5];
+
+      charReveal(title, { variant: titleVariant });
+      if (body) revealAndFade(body, { variant: bodyVariant, y: 42 });
+      if (list) revealAndFade(list, { variant: bodyVariant, y: 34, stagger: 0.03 });
+      if (eyebrow) revealAndFade(eyebrow, { variant: eyebrowVariant, y: 26 });
+    });
   });
 
   /* ---------------------------------------------------------
@@ -1221,9 +1485,9 @@
       });
     });
 
-    charReveal(document.querySelector(".stats__intro .feature__title"));
-    revealAndFade(".stats__intro .eyebrow", { variant: "swing" });
-    revealAndFade(".stat", { y: 24, stagger: 0.05, variant: "punch" });
+    charReveal(document.querySelector(".stats__intro .feature__title"), { variant: "collide" });
+    revealAndFade(".stats__intro .eyebrow", { variant: "flip", y: 24 });
+    revealAndFade(".stat", { y: 32, stagger: 0.05, variant: "bounce" });
   });
 
   /* ---------------------------------------------------------
@@ -1233,7 +1497,7 @@
      on top of that, not a replacement for it.
      --------------------------------------------------------- */
   safeRun("statement", function () {
-    revealAndFade(".statement .wrap", { variant: "tilt" });
+    revealAndFade(".statement .wrap", { variant: "smoke", y: 36 });
     document.querySelectorAll(".statement__text").forEach((el) => {
       const split = new SplitText(el, { type: "words", wordsClass: "word" });
       // words are gradient-filled by CSS now (.statement__text .word), so
@@ -1295,7 +1559,7 @@
         },
       });
     });
-    charReveal(document.querySelector(".cta__title"));
+    charReveal(document.querySelector(".cta__title"), { variant: "flip" });
   });
 
   /* ---------------------------------------------------------
