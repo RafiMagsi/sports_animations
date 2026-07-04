@@ -28,17 +28,18 @@
   function render(progress) {
     const width = stage.clientWidth || window.innerWidth;
     const height = window.innerHeight;
-    const startX = width * 0.74;
-    const endX = -width * 0.76;
+    const startX = width * 1.16;
+    const endX = -width * 1.2;
+    const bandY = height * (window.innerWidth < 820 ? 0.5 : 0.46);
 
     items.forEach((item, index) => {
       const offset = Number(item.dataset.offset || 0);
-      const local = wrap01(progress * 1.04 + offset);
+      const local = wrap01(progress * 1.12 + offset);
       const pathX = gsap.utils.interpolate(startX, endX, local);
       const arc = Math.sin(local * Math.PI);
-      const y = height * (0.02 + (0.18 * (1 - arc)) + (local - 0.5) * 0.09);
+      const y = bandY - arc * height * 0.065 + (local - 0.5) * height * 0.022;
       const centerPull = 1 - Math.min(1, Math.abs(local - 0.5) / 0.5);
-      const scale = 0.62 + centerPull * 0.62;
+      const scale = 0.58 + centerPull * 0.5;
       const rotateY = 34 - local * 68;
       const rotateX = 14 - centerPull * 12;
       const rotateZ = local < 0.5
@@ -78,8 +79,11 @@
   const trigger = ScrollTrigger.create({
     trigger: root,
     start: "top top",
-    end: "bottom bottom",
+    end: "+=220%",
+    pin: root,
+    anticipatePin: 1,
     scrub: true,
+    invalidateOnRefresh: true,
     onUpdate(self) {
       render(self.progress);
     }

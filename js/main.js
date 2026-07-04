@@ -1404,6 +1404,57 @@
     });
   });
 
+  safeRun("sectionPins", function () {
+    if (reduceMotion) return;
+
+    const hero = document.querySelector(".hero");
+    if (hero) {
+      ScrollTrigger.create({
+        trigger: hero,
+        start: "top top",
+        end: "+=70%",
+        pin: true,
+        anticipatePin: 1,
+        pinSpacing: true
+      });
+    }
+
+    gsap.utils.toArray(".feature").forEach((section) => {
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "+=38%",
+        pin: true,
+        anticipatePin: 1,
+        pinSpacing: true
+      });
+    });
+
+    const statement = document.querySelector(".statement");
+    if (statement) {
+      ScrollTrigger.create({
+        trigger: statement,
+        start: "top top",
+        end: "+=22%",
+        pin: true,
+        anticipatePin: 1,
+        pinSpacing: true
+      });
+    }
+
+    const cta = document.querySelector(".cta");
+    if (cta) {
+      ScrollTrigger.create({
+        trigger: cta,
+        start: "top top",
+        end: "+=28%",
+        pin: true,
+        anticipatePin: 1,
+        pinSpacing: true
+      });
+    }
+  });
+
   safeRun("seasonChipDrift", function () {
     const chip = document.querySelector(".hero__season-chip");
     const hero = document.querySelector(".hero");
