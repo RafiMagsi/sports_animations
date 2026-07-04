@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Football Carousel</title>
+  
+  <!-- Import the Google Model-Viewer library -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.3.1/dist/model-viewer.min.js"></script>
+  <script nomodule src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.3.1/dist/model-viewer-legacy.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #121212;
+      color: #fff;
+    }
+
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      height: 500px;
+    }
+
+    /* Styling the 3D viewer */
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      --poster-color: transparent;
+    }
+
+    /* Carousel Navigation Buttons */
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 15px 20px;
+      font-size: 24px;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: background 0.3s;
+      z-index: 10;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .prev { left: 10px; }
+    .next { right: 10px; }
+
+    /* Indicator Dots */
+    .dots-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .dot.active {
+      background: #00ff66; /* Active football accent color */
+    }
+
+    .model-title {
+      margin-top: 10px;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="model-title" id="ball-title">World Cup Ball 1</h1>
+
+  <div class="carousel-container">
+    <!-- Navigation -->
+    <button class="nav-btn prev" onclick="changeModel(-1)">&#10094;</button>
+    <button class="nav-btn next" onclick="changeModel(1)">&#10095;</button>
+
+    <!-- The Single Interpolating 3D Viewer -->
+    <model-viewer 
+      id="football-viewer"
+      src="models/football1.glb" 
+      camera-controls 
+      auto-rotate 
+      interpolation-decay="200"
+      shadow-intensity="15"
+      shadow-softness="1"
+      exposure="1.2">
+    </model-viewer>
+  </div>
+
+  <!-- Indicator Dots -->
+  <div class="dots-container" id="dots-container"></div>
+
+  <script>
+    // 1. Define your 3D football files and titles
+    const footballModels = [
+      { src: 'assets/football-models/adidas_teamgeist_ball_germany_2006_match_ball.glb', title: 'Classic Leather Ball' },
+      { src: 'assets/football-models/fifa_world_cup_ball.glb', title: 'Modern Match Ball' },
+      { src: 'assets/football-models/leather_foot_ball_soccer.glb', title: 'Neon Street Ball' }
+    ];
+
+    let currentIndex = 0;
+    const viewer = document.getElementById('football-viewer');
+    const titleElement = document.getElementById('ball-title');
+    const dotsContainer = document.getElementById('dots-container');
+
+    // 2. Generate indicator dots dynamically
+    footballModels.forEach((_, index) => {
+      const dot = document.createElement('div');
+      dot.classList.add('dot');
+      if (index === 0) dot.classList.add('active');
+      dot.addEventListener('click', () => jumpToModel(index));
+      dotsContainer.appendChild(dot);
+    });
+
+    // 3. Handle sliding transitions
+    function changeModel(direction) {
+      currentIndex += direction;
+      if (currentIndex >= footballModels.length) currentIndex = 0;
+      if (currentIndex < 0) currentIndex = footballModels.length - 1;
+      updateCarousel();
+    }
+
+    function jumpToModel(index) {
+      currentIndex = index;
+      updateCarousel();
+    }
+
+    // 4. Update model sources and UI state
+    function updateCarousel() {
+      const currentModel = footballModels[currentIndex];
+      
+      // Changing the src triggers model-viewer's internal interpolation
+      viewer.src = currentModel.src;
+      titleElement.textContent = currentModel.title;
+
+      // Update dots UI
+      document.querySelectorAll('.dot').forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === currentIndex);
+      });
+    }
+  </script>
+</body>
+</html>

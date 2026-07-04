@@ -1089,6 +1089,540 @@
   }
 
   /* ---------------------------------------------------------
+     2b. HERO STAGE — transparent Three.js layer over the fixed video,
+     built to feel closer to Peachweb-style premium holographic motion
+     without changing the site's architecture. Uses the existing plain
+     JS + vendored Three.js stack:
+       - glossy football core
+       - holographic seam rings / orbit bands
+       - floating spark field
+       - scroll-bound gather into center, hold, then drift away
+       - mouse parallax stays additive on top of scroll motion
+     --------------------------------------------------------- */
+  function setupHeroStage() {
+    const section = document.querySelector(".hero");
+    const canvas = document.querySelector(".hero__stage");
+    if (!section || !canvas || !window.THREE) return;
+
+    const THREE = window.THREE;
+    const isSmall = window.innerWidth < 720;
+    const SPARK_COUNT = isSmall ? 360 : 620;
+
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    } catch (e) {
+      return;
+    }
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isSmall ? 1.5 : 2));
+    if ("outputColorSpace" in renderer && THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.16;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 220);
+    camera.position.set(0, 0, 54);
+
+    const stage = new THREE.Group();
+    const ballRig = new THREE.Group();
+    const haloRig = new THREE.Group();
+    scene.add(stage);
+    stage.add(ballRig);
+    stage.add(haloRig);
+
+    const ambient = new THREE.AmbientLight(0x9ab8ff, 1.15);
+    const hemi = new THREE.HemisphereLight(0xaee8ff, 0x0b1020, 1.2);
+    const key = new THREE.DirectionalLight(0xffffff, 2.2);
+    key.position.set(10, 14, 18);
+    const rim = new THREE.DirectionalLight(0xe879f9, 1.5);
+    rim.position.set(-14, -6, 10);
+    scene.add(ambient, hemi, key, rim);
+
+    function makeGlowTexture() {
+      const s = 128;
+      const c = document.createElement("canvas");
+      c.width = c.height = s;
+      const ctx = c.getContext("2d");
+      const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+      g.addColorStop(0, "rgba(255,255,255,1)");
+      g.addColorStop(0.25, "rgba(214,238,255,0.9)");
+      g.addColorStop(0.55, "rgba(134,115,255,0.34)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, s, s);
+      return new THREE.CanvasTexture(c);
+    }
+
+    const glowTex = makeGlowTexture();
+    function makeFootballTextures() {
+      const size = 1024;
+      const colorCanvas = document.createElement("canvas");
+      const bumpCanvas = document.createElement("canvas");
+      const roughCanvas = document.createElement("canvas");
+      colorCanvas.width = colorCanvas.height = size;
+      bumpCanvas.width = bumpCanvas.height = size;
+      roughCanvas.width = roughCanvas.height = size;
+
+      const ctx = colorCanvas.getContext("2d");
+      const bctx = bumpCanvas.getContext("2d");
+      const rctx = roughCanvas.getContext("2d");
+
+      ctx.fillStyle = "#f3f5f8";
+      ctx.fillRect(0, 0, size, size);
+      bctx.fillStyle = "#8e8e8e";
+      bctx.fillRect(0, 0, size, size);
+      rctx.fillStyle = "#848484";
+      rctx.fillRect(0, 0, size, size);
+
+      for (let y = 0; y < size; y += 3) {
+        for (let x = 0; x < size; x += 3) {
+          const grain = Math.random();
+          const bright = 228 + Math.floor(grain * 18);
+          ctx.fillStyle = "rgba(" + bright + "," + (bright + 2) + "," + (bright + 5) + "," + (0.035 + grain * 0.045).toFixed(3) + ")";
+          ctx.fillRect(x, y, 3, 3);
+          const bumpTone = 126 + Math.floor(grain * 22);
+          bctx.fillStyle = "rgba(" + bumpTone + "," + bumpTone + "," + bumpTone + "," + (0.05 + grain * 0.03).toFixed(3) + ")";
+          bctx.fillRect(x, y, 3, 3);
+          const roughTone = 114 + Math.floor(grain * 40);
+          rctx.fillStyle = "rgba(" + roughTone + "," + roughTone + "," + roughTone + "," + (0.08 + grain * 0.04).toFixed(3) + ")";
+          rctx.fillRect(x, y, 3, 3);
+        }
+      }
+
+      const leatherShade = ctx.createLinearGradient(0, 0, size, size);
+      leatherShade.addColorStop(0, "rgba(255,255,255,0.22)");
+      leatherShade.addColorStop(0.32, "rgba(255,255,255,0.06)");
+      leatherShade.addColorStop(0.68, "rgba(140,148,168,0.04)");
+      leatherShade.addColorStop(1, "rgba(80,90,108,0.12)");
+      ctx.fillStyle = leatherShade;
+      ctx.fillRect(0, 0, size, size);
+
+      function polygonPath(targetCtx, cx, cy, radius, sides, rotation) {
+        targetCtx.beginPath();
+        for (let i = 0; i < sides; i++) {
+          const a = rotation + (i / sides) * Math.PI * 2;
+          const px = cx + Math.cos(a) * radius;
+          const py = cy + Math.sin(a) * radius;
+          if (i === 0) targetCtx.moveTo(px, py);
+          else targetCtx.lineTo(px, py);
+        }
+        targetCtx.closePath();
+      }
+
+      function drawSeamShadow(pathCtx, cx, cy, radius, sides, rotation) {
+        pathCtx.save();
+        polygonPath(pathCtx, cx, cy, radius, sides, rotation);
+        pathCtx.clip();
+        const seamGrad = pathCtx.createRadialGradient(cx - radius * 0.24, cy - radius * 0.24, radius * 0.1, cx, cy, radius * 1.06);
+        seamGrad.addColorStop(0, "rgba(255,255,255,0.2)");
+        seamGrad.addColorStop(0.58, "rgba(255,255,255,0)");
+        seamGrad.addColorStop(1, "rgba(36,44,58,0.2)");
+        pathCtx.fillStyle = seamGrad;
+        pathCtx.fillRect(cx - radius * 1.2, cy - radius * 1.2, radius * 2.4, radius * 2.4);
+        pathCtx.restore();
+      }
+
+      function drawPanel(cx, cy, radius, sides, rotation, fill, seam, panelType) {
+        polygonPath(ctx, cx, cy, radius, sides, rotation);
+        ctx.fillStyle = fill;
+        ctx.fill();
+        drawSeamShadow(ctx, cx, cy, radius, sides, rotation);
+        ctx.lineWidth = Math.max(2.2, radius * 0.13);
+        ctx.strokeStyle = seam;
+        ctx.stroke();
+
+        ctx.save();
+        polygonPath(ctx, cx, cy, radius * 0.92, sides, rotation);
+        ctx.clip();
+        const panelGrad = ctx.createLinearGradient(cx - radius, cy - radius, cx + radius, cy + radius);
+        if (panelType === "dark") {
+          panelGrad.addColorStop(0, "rgba(52,58,72,0.88)");
+          panelGrad.addColorStop(0.5, "rgba(20,24,31,0.98)");
+          panelGrad.addColorStop(1, "rgba(72,80,96,0.74)");
+        } else {
+          panelGrad.addColorStop(0, "rgba(255,255,255,0.52)");
+          panelGrad.addColorStop(0.48, "rgba(255,255,255,0.16)");
+          panelGrad.addColorStop(1, "rgba(180,188,204,0.16)");
+        }
+        ctx.fillStyle = panelGrad;
+        ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+        ctx.restore();
+
+        polygonPath(bctx, cx, cy, radius, sides, rotation);
+        bctx.fillStyle = panelType === "dark" ? "#585858" : "#c8c8c8";
+        bctx.fill();
+        bctx.lineWidth = Math.max(4, radius * 0.2);
+        bctx.strokeStyle = panelType === "dark" ? "#dadada" : "#5c5c5c";
+        bctx.stroke();
+
+        polygonPath(rctx, cx, cy, radius, sides, rotation);
+        rctx.fillStyle = panelType === "dark" ? "#2a2a2a" : "#b8b8b8";
+        rctx.fill();
+        rctx.lineWidth = Math.max(3, radius * 0.16);
+        rctx.strokeStyle = panelType === "dark" ? "#6a6a6a" : "#4a4a4a";
+        rctx.stroke();
+      }
+
+      const rows = [
+        { y: 0.14, count: 5, offset: 0.0, radius: 0.058 },
+        { y: 0.28, count: 6, offset: 0.06, radius: 0.068 },
+        { y: 0.42, count: 7, offset: 0.02, radius: 0.076 },
+        { y: 0.58, count: 7, offset: 0.09, radius: 0.076 },
+        { y: 0.72, count: 6, offset: 0.04, radius: 0.068 },
+        { y: 0.86, count: 5, offset: 0.0, radius: 0.058 }
+      ];
+
+      rows.forEach((row, rowIndex) => {
+        for (let i = 0; i < row.count; i++) {
+          const xFrac = (i + 0.5) / row.count + row.offset / row.count;
+          const cx = ((xFrac % 1) + 1) % 1 * size;
+          const cy = row.y * size;
+          const radius = row.radius * size;
+          const isDark = (rowIndex * 2 + i) % 4 === 0;
+          const sides = isDark ? 5 : 6;
+          const rotation = isDark ? -Math.PI / 2 : Math.PI / 6;
+          drawPanel(
+            cx,
+            cy,
+            radius,
+            sides,
+            rotation,
+            isDark ? "#1a1e27" : "#f3f5f8",
+            isDark ? "rgba(236,240,247,0.92)" : "rgba(72,78,94,0.44)",
+            isDark ? "dark" : "light"
+          );
+        }
+      });
+
+      ctx.save();
+      ctx.globalAlpha = 0.12;
+      for (let i = 0; i < 26; i++) {
+        const arcR = size * (0.14 + i * 0.03);
+        ctx.strokeStyle = i % 2 === 0 ? "rgba(255,255,255,0.06)" : "rgba(123,136,164,0.05)";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(size * 0.34, size * 0.28, arcR, -0.42, 0.78);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      bctx.save();
+      bctx.globalAlpha = 0.24;
+      for (let i = 0; i < 20; i++) {
+        const y = (i / 19) * size;
+        bctx.strokeStyle = "rgba(150,150,150,0.08)";
+        bctx.beginPath();
+        bctx.moveTo(0, y);
+        bctx.lineTo(size, y + Math.sin(i) * 10);
+        bctx.stroke();
+      }
+      bctx.restore();
+
+      rctx.save();
+      rctx.globalAlpha = 0.18;
+      for (let i = 0; i < 18; i++) {
+        const x = (i / 17) * size;
+        rctx.strokeStyle = "rgba(95,95,95,0.12)";
+        rctx.beginPath();
+        rctx.moveTo(x, 0);
+        rctx.lineTo(x + Math.cos(i) * 10, size);
+        rctx.stroke();
+      }
+      rctx.restore();
+
+      const colorTexture = new THREE.CanvasTexture(colorCanvas);
+      colorTexture.wrapS = colorTexture.wrapT = THREE.RepeatWrapping;
+      colorTexture.repeat.set(1, 1);
+      colorTexture.anisotropy = 8;
+
+      const bumpTexture = new THREE.CanvasTexture(bumpCanvas);
+      bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping;
+      bumpTexture.repeat.set(1, 1);
+      bumpTexture.anisotropy = 8;
+
+      const roughTexture = new THREE.CanvasTexture(roughCanvas);
+      roughTexture.wrapS = roughTexture.wrapT = THREE.RepeatWrapping;
+      roughTexture.repeat.set(1, 1);
+      roughTexture.anisotropy = 8;
+
+      return { colorTexture, bumpTexture, roughTexture };
+    }
+
+    const footballTextures = makeFootballTextures();
+
+    const ball = new THREE.Mesh(
+      new THREE.SphereGeometry(8.2, isSmall ? 34 : 54, isSmall ? 34 : 54),
+      new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        map: footballTextures.colorTexture,
+        bumpMap: footballTextures.bumpTexture,
+        roughnessMap: footballTextures.roughTexture,
+        bumpScale: 0.42,
+        roughness: 0.74,
+        metalness: 0.02,
+        clearcoat: 1,
+        clearcoatRoughness: 0.42,
+        transmission: 0.02,
+        thickness: 1.1,
+        emissive: new THREE.Color("#0f1220"),
+        emissiveIntensity: 0.05,
+      })
+    );
+    ballRig.add(ball);
+
+    const shell = new THREE.Mesh(
+      new THREE.SphereGeometry(8.75, isSmall ? 24 : 32, isSmall ? 24 : 32),
+      new THREE.MeshStandardMaterial({
+        color: 0xa78bfa,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.16
+      })
+    );
+    ballRig.add(shell);
+
+    function createOrbitBand(cfg) {
+      const positions = new Float32Array(cfg.count * 3);
+      for (let i = 0; i < cfg.count; i++) {
+        const a = (i / cfg.count) * Math.PI * 2;
+        positions[i * 3] = Math.cos(a) * cfg.rx;
+        positions[i * 3 + 1] = Math.sin(a * cfg.yFreq) * cfg.ampY;
+        positions[i * 3 + 2] = Math.sin(a) * cfg.rz;
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      const material = new THREE.PointsMaterial({
+        size: cfg.size,
+        map: glowTex,
+        color: cfg.color,
+        transparent: true,
+        depthWrite: false,
+        opacity: cfg.opacity,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true
+      });
+      const points = new THREE.Points(geometry, material);
+      points.rotation.x = cfg.rotX || 0;
+      points.rotation.y = cfg.rotY || 0;
+      points.rotation.z = cfg.rotZ || 0;
+      return points;
+    }
+
+    const orbitA = createOrbitBand({
+      count: 180, rx: 11.8, rz: 11.8, ampY: 0.34, yFreq: 2,
+      size: isSmall ? 0.32 : 0.38, color: 0x7dd3fc, opacity: 0.72, rotX: Math.PI * 0.24
+    });
+    const orbitB = createOrbitBand({
+      count: 160, rx: 12.6, rz: 9.6, ampY: 0.24, yFreq: 3,
+      size: isSmall ? 0.28 : 0.34, color: 0xe879f9, opacity: 0.6, rotZ: Math.PI * 0.34, rotX: -Math.PI * 0.18
+    });
+    const orbitC = createOrbitBand({
+      count: 140, rx: 10.6, rz: 13.2, ampY: 0.28, yFreq: 2,
+      size: isSmall ? 0.22 : 0.3, color: 0xffffff, opacity: 0.42, rotY: Math.PI * 0.16
+    });
+    haloRig.add(orbitA, orbitB, orbitC);
+
+    const sparkPositions = new Float32Array(SPARK_COUNT * 3);
+    const sparkColors = new Float32Array(SPARK_COUNT * 3);
+    const sparkMeta = new Array(SPARK_COUNT);
+    const cyan = new THREE.Color("#67e8f9");
+    const violet = new THREE.Color("#8b5cf6");
+    const pink = new THREE.Color("#f472b6");
+    const white = new THREE.Color("#f8fbff");
+
+    for (let i = 0; i < SPARK_COUNT; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spread = 13 + Math.random() * 16;
+      const height = (Math.random() - 0.5) * 16;
+      sparkPositions[i * 3] = Math.cos(angle) * spread;
+      sparkPositions[i * 3 + 1] = height;
+      sparkPositions[i * 3 + 2] = Math.sin(angle) * spread;
+
+      const mix = Math.random();
+      const col = mix < 0.33 ? cyan.clone().lerp(violet, Math.random()) : mix < 0.66 ? violet.clone().lerp(pink, Math.random()) : white.clone().lerp(cyan, Math.random());
+      sparkColors[i * 3] = col.r;
+      sparkColors[i * 3 + 1] = col.g;
+      sparkColors[i * 3 + 2] = col.b;
+
+      sparkMeta[i] = {
+        baseX: sparkPositions[i * 3],
+        baseY: sparkPositions[i * 3 + 1],
+        baseZ: sparkPositions[i * 3 + 2],
+        speed: 0.4 + Math.random() * 0.9,
+        phase: Math.random() * Math.PI * 2
+      };
+    }
+
+    const sparkGeometry = new THREE.BufferGeometry();
+    sparkGeometry.setAttribute("position", new THREE.BufferAttribute(sparkPositions, 3));
+    sparkGeometry.setAttribute("color", new THREE.BufferAttribute(sparkColors, 3));
+    const sparkMaterial = new THREE.PointsMaterial({
+      size: isSmall ? 0.28 : 0.38,
+      map: glowTex,
+      vertexColors: true,
+      transparent: true,
+      depthWrite: false,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true
+    });
+    const sparks = new THREE.Points(sparkGeometry, sparkMaterial);
+    stage.add(sparks);
+
+    const coreGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glowTex,
+      color: 0x8b5cf6,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.72
+    }));
+    coreGlow.scale.set(20, 20, 1);
+    ballRig.add(coreGlow);
+
+    const flareGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glowTex,
+      color: 0x67e8f9,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.34
+    }));
+    flareGlow.position.set(6, 4, 2);
+    flareGlow.scale.set(14, 14, 1);
+    stage.add(flareGlow);
+
+    let scrollProgress = reduceMotion ? 1 : 0.5;
+    let mouseTargetX = 0;
+    let mouseTargetY = 0;
+    let mouseX = 0;
+    let mouseY = 0;
+    let lastTime = 0;
+
+    function resize() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      camera.aspect = rect.width / rect.height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(rect.width, rect.height, false);
+    }
+    resize();
+
+    section.addEventListener("mousemove", (event) => {
+      const rect = section.getBoundingClientRect();
+      mouseTargetX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+      mouseTargetY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+    });
+    section.addEventListener("mouseleave", () => {
+      mouseTargetX = 0;
+      mouseTargetY = 0;
+    });
+
+    function heroStageEnvelope(progress) {
+      if (progress < 0.34) {
+        return { phase: "enter", t: easeOutCubic(progress / 0.34) };
+      }
+      if (progress < 0.78) {
+        return { phase: "hold", t: (progress - 0.34) / 0.44 };
+      }
+      return { phase: "leave", t: (progress - 0.78) / 0.22 };
+    }
+
+    function tick(time) {
+      const dt = Math.min(0.05, (time - lastTime) / 1000 || 0.016);
+      lastTime = time;
+
+      mouseX += (mouseTargetX - mouseX) * Math.min(1, dt * 5.4);
+      mouseY += (mouseTargetY - mouseY) * Math.min(1, dt * 5.4);
+
+      const envelope = heroStageEnvelope(scrollProgress);
+      const idle = time * 0.00055;
+
+      let posX = 0;
+      let posY = 0;
+      let posZ = 0;
+      let scale = 1;
+      let opacity = 1;
+
+      if (envelope.phase === "enter") {
+        posX = 20 * (1 - envelope.t);
+        posY = -7 * (1 - envelope.t);
+        posZ = -12 * (1 - envelope.t);
+        scale = 0.54 + envelope.t * 0.46;
+        opacity = 0.1 + envelope.t * 0.9;
+      } else if (envelope.phase === "hold") {
+        posX = Math.sin(envelope.t * Math.PI * 2) * 1.8;
+        posY = Math.cos(envelope.t * Math.PI * 1.6) * 1.2;
+        posZ = 0;
+        scale = 1 + Math.sin(envelope.t * Math.PI) * 0.04;
+        opacity = 1;
+      } else {
+        const eased = gsap.parseEase("power2.inOut")(clamp01(envelope.t));
+        posX = -7 * eased;
+        posY = 3 * eased;
+        posZ = 6 * eased;
+        scale = 1 - eased * 0.1;
+        opacity = 1 - eased * 0.28;
+      }
+
+      stage.position.x = posX + mouseX * 2.2;
+      stage.position.y = posY - mouseY * 1.8;
+      stage.position.z = posZ;
+      stage.scale.setScalar(scale);
+
+      ballRig.rotation.y = idle + scrollProgress * Math.PI * 0.22 + mouseX * 0.22;
+      ballRig.rotation.x = Math.sin(idle * 0.9) * 0.12 - mouseY * 0.12;
+      ballRig.rotation.z = Math.cos(idle * 0.7) * 0.08;
+
+      haloRig.rotation.y = -idle * 1.2;
+      haloRig.rotation.x = Math.sin(idle * 0.8) * 0.18;
+      orbitA.rotation.z += dt * 0.42;
+      orbitB.rotation.z -= dt * 0.34;
+      orbitC.rotation.y += dt * 0.26;
+
+      const sparkAttr = sparkGeometry.attributes.position;
+      for (let i = 0; i < SPARK_COUNT; i++) {
+        const meta = sparkMeta[i];
+        const wave = idle * meta.speed + meta.phase;
+        sparkAttr.array[i * 3] = meta.baseX + Math.cos(wave) * 1.8;
+        sparkAttr.array[i * 3 + 1] = meta.baseY + Math.sin(wave * 1.4) * 1.4;
+        sparkAttr.array[i * 3 + 2] = meta.baseZ + Math.sin(wave) * 1.8;
+      }
+      sparkAttr.needsUpdate = true;
+
+      sparkMaterial.opacity = 0.24 + opacity * 0.56;
+      coreGlow.material.opacity = 0.34 + opacity * 0.44;
+      flareGlow.material.opacity = 0.18 + opacity * 0.24;
+      shell.material.opacity = 0.08 + opacity * 0.1;
+      orbitA.material.opacity = 0.32 + opacity * 0.4;
+      orbitB.material.opacity = 0.24 + opacity * 0.32;
+      orbitC.material.opacity = 0.12 + opacity * 0.2;
+
+      camera.position.z = 58 - scrollProgress * 9;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
+
+    if (!reduceMotion) {
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top bottom",
+        end: "bottom top",
+        scrub: true,
+        onUpdate: (self) => {
+          scrollProgress = self.progress;
+        }
+      });
+    }
+
+    window.addEventListener("resize", resize);
+  }
+
+  /* ---------------------------------------------------------
      2d. FLOATING-WORD SMOKE — a soft, slow-drifting haze behind the
      floating word reveals (see main.js). Same technique as the
      feature-section ambient orbs, but muted to a near-white smoke
@@ -1378,6 +1912,7 @@
     // ".intro"'s pinned bottom edge — see bindScroll() below.
     safeRun("setupIntro", setupIntro);
     safeRun("setupBackgroundVideo", setupBackgroundVideo);
+    safeRun("setupHeroStage", setupHeroStage);
     safeRun("setupGalaxy", setupGalaxy);
     safeRun("setupFeatureAmbient", setupFeatureAmbient);
     safeRun("setupFloatingSmoke", setupFloatingSmoke);
