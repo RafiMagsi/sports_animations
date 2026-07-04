@@ -662,7 +662,7 @@
     const stage = document.querySelector(".hero__stage");
     const flash = document.querySelector(".hero__flash");
 
-    if (orbitals.length) gsap.set(orbitals, { opacity: 0, y: 28, scale: 0.92, filter: "blur(10px)" });
+    if (orbitals.length) gsap.set(orbitals, { opacity: 0, y: 18, scale: 0.92, filter: "blur(10px)" });
 
     if (reduceMotion) {
       if (orbitals.length) gsap.set(orbitals, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" });
@@ -673,7 +673,7 @@
       scrollTrigger: {
         trigger: ".hero",
         start: "top top",
-        end: "+=42%",
+        end: "+=90%",
         scrub: true,
       },
     });
@@ -686,7 +686,7 @@
     }
 
     if (flash) {
-      tl.to(flash, { opacity: 0, ease: "none", duration: 0.12 }, 0.22);
+      tl.to(flash, { opacity: 0, ease: "power1.in", duration: 0.12 }, 0.32);
     }
   }
 
@@ -765,30 +765,30 @@
       let leaveEase = "power2.in";
 
       if (variant === "flip") {
-        gsap.set(line, { transformPerspective: 1600, transformOrigin: "50% 50%" });
+        gsap.set(line, { transformPerspective: 1200, transformOrigin: "50% 50%" });
         fromVars = { opacity: 0, rotateY: i % 2 === 0 ? -88 : 88, rotateX: -12, scale: 0.82, filter: "blur(16px)" };
         holdVars = { opacity: 1, rotateY: 0, rotateX: 0, scale: 1, filter: "blur(0px)" };
         exitVars = { opacity: 0, rotateY: i % 2 === 0 ? 68 : -68, rotateX: 8, scale: 1.08, filter: "blur(12px)" };
       } else if (variant === "collide") {
-        gsap.set(line, { transformPerspective: 1600, transformOrigin: i % 2 === 0 ? "50% 50%" : "50% 50%" });
+        gsap.set(line, { transformPerspective: 1200, transformOrigin: i % 2 === 0 ? "50% 50%" : "50% 50%" });
         fromVars = { opacity: 0, x: i % 2 === 0 ? 240 : -240, scaleX: 1.18, scaleY: 0.84, rotateZ: i % 2 === 0 ? -4 : 4, filter: "blur(16px)" };
         holdVars = { opacity: 1, x: 0, scaleX: 1, scaleY: 1, rotateZ: 0, filter: "blur(0px)" };
         exitVars = { opacity: 0, x: i % 2 === 0 ? -180 : 180, scaleX: 0.96, scaleY: 1.06, rotateZ: i % 2 === 0 ? 3 : -3, filter: "blur(12px)" };
         enterEase = "power4.out";
       } else if (variant === "bounce") {
-        gsap.set(line, { transformPerspective: 1600, transformOrigin: "50% 100%" });
+        gsap.set(line, { transformPerspective: 1200, transformOrigin: "50% 100%" });
         fromVars = { opacity: 0, y: 120, scaleY: 1.3, scaleX: 0.82, filter: "blur(16px)" };
         holdVars = { opacity: 1, y: 0, scaleY: 1, scaleX: 1, filter: "blur(0px)" };
         exitVars = { opacity: 0, y: -72, scaleY: 0.9, scaleX: 1.08, filter: "blur(12px)" };
         enterEase = "back.out(1.6)";
       } else if (variant === "smoke") {
-        gsap.set(line, { transformPerspective: 1600, transformOrigin: "50% 50%" });
+        gsap.set(line, { transformPerspective: 1200, transformOrigin: "50% 50%" });
         fromVars = { opacity: 0, y: 32, skewX: i % 2 === 0 ? -8 : 8, scale: 0.94, filter: "blur(30px)" };
         holdVars = { opacity: 1, y: 0, skewX: 0, scale: 1, filter: "blur(0px)" };
         exitVars = { opacity: 0, y: -38, skewX: i % 2 === 0 ? 9 : -9, scale: 1.1, filter: "blur(24px)" };
         leaveEase = "power1.in";
       } else {
-        gsap.set(line, { transformPerspective: 1600, transformOrigin: "50% 50%" });
+        gsap.set(line, { transformPerspective: 1200, transformOrigin: "50% 50%" });
         fromVars = { opacity: 0, z: -260, scale: 0.56, filter: "blur(18px)" };
         holdVars = { opacity: 1, z: 0, scale: 1, filter: "blur(0px)" };
         exitVars = { opacity: 0, z: 180, scale: 1.14, filter: "blur(12px)" };
@@ -1336,7 +1336,7 @@
     });
 
     function metrics() {
-      const viewportWidth = viewport.clientWidth * 0.5;
+      const viewportWidth = viewport.clientWidth * 0.6;
       const firstCardWidth = cards[0]?.offsetWidth || 0;
       const sidePad = Math.max(24, viewportWidth * 0.08);
       const startX = viewportWidth + sidePad;
