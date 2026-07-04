@@ -194,7 +194,7 @@
 
   function buildFloatingNarratives() {
     const distributed = [
-      { anchor: "#promo", copy: PRODUCT_FLOAT_TEXTS[0], family: "product", top: "16%", left: "68%" },
+      { anchor: "#promo", copy: PRODUCT_FLOAT_TEXTS[0], family: "product", top: "16%", left: "78%" },
       { anchor: "#gear", copy: SPORT_FLOAT_TEXTS[0], family: "sport", top: "24%", left: "72%" },
       { anchor: "#numbers", copy: SPORT_FLOAT_TEXTS[7], family: "sport", top: "76%", left: "27%" },
       { anchor: "#training", copy: PRODUCT_FLOAT_TEXTS[4], family: "product", top: "24%", left: "73%" },
@@ -1514,10 +1514,11 @@
     const triggerRef = ScrollTrigger.create({
       trigger: root,
       start: "top top",
-      end: "+=140%",
+      end: "+=" + (opts.scrollLength || "140%"),
       pin: root,
       anticipatePin: 1,
       scrub: true,
+      invalidateOnRefresh: true,
       onUpdate: (self) => {
         renderByProgress(self.progress); // render the carousel track/cards
         if (header) {
@@ -1537,6 +1538,7 @@
 
   safeRun("quoteCarousel", function () {
     setupScrollCarousel(".quote-carousel", ".quote-card", {
+      scrollLength: "220%",
       entryOffset: 80,
       exitOffset: 120,
       trackYStart: 0,
@@ -1555,6 +1557,7 @@
 
   safeRun("flagsCarousel", function () {
     setupScrollCarousel(".flags-carousel", ".flag-card", {
+      scrollLength: "220%",
       entryOffset: 60,
       exitOffset: 100,
       trackYStart: 0,

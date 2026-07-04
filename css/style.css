@@ -18,7 +18,7 @@
    ========================================================= */
 
 :root{
-  --holo-1: #9aefff; /* bright cyan */
+  --holo-1: #00b8d9; /* bright cyan */
   --holo-2: #b79dff; /* bright violet */
   --holo-3: #ff9fe2; /* bright pink */
   --holo-4: #e7ff95; /* stadium-light lime */
@@ -45,7 +45,7 @@
 
   /* text lives on video now, not on a flat page background — light
      ink + shadow reads regardless of what's playing behind it */
-  --ink: #f7f8fc;
+  --ink: #0991b0;
   --ink-dim: rgba(247,248,252,0.78);
   --line-soft: rgba(247,248,252,0.22);
   --text-shadow: 0 2px 20px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.5);
@@ -1076,8 +1076,8 @@ body.cursor-hover .cursor-ring{
   width: 100%;
   height: 100%;
   display: block;
-  z-index: 2; /* particles paint ABOVE the dark backing (z-index:1 below) */
-  filter: saturate(1.12) contrast(1.06) brightness(1.04);
+  z-index: 0; /* particles paint ABOVE the dark backing (z-index:1 below) */
+  filter: saturate(2.12) contrast(1.56) brightness(2.04);
 }
 .galaxy__vignette{
   position: absolute;
@@ -1115,15 +1115,16 @@ body.cursor-hover .cursor-ring{
 }
 .galaxy__eyebrow{ justify-content: center; margin-bottom: 22px; }
 .galaxy__title{
-  font-size: clamp(46px, 8.5vw, 134px);
-  color: var(--ink);
+  background: var(--text-fog);
+  font-size: clamp(46px, 8.5vw, 94px);
+  color: var(--scene-accent);
 }
 .galaxy__title em{
   font-style: normal;
   background: var(--holo-gradient);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
+  color: var(--scene-accent);
   filter: drop-shadow(0 2px 16px rgba(0,0,0,0.4));
 }
 .galaxy__sub{
@@ -1157,8 +1158,9 @@ body.cursor-hover .cursor-ring{
    ========================================================= */
 .feature{
   position: relative;
-  padding: clamp(120px, 16vw, 220px) 0;
+  padding: clamp(84px, 10vh, 124px) 0 clamp(68px, 8vh, 108px);
   min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -1166,6 +1168,7 @@ body.cursor-hover .cursor-ring{
 }
 .feature > .wrap{
   width: 100%;
+  min-height: calc(100svh - clamp(152px, 18vh, 232px));
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   column-gap: clamp(16px, 2vw, 28px);
@@ -1197,7 +1200,7 @@ body.cursor-hover .cursor-ring{
   pointer-events: none;
 }
 .feature--reverse .feature__wrap{
-  grid-column: 6 / span 6;
+  grid-column: 5 / span 6;
   text-align: right;
 }
 .feature--reverse .feature__list li{ flex-direction: row-reverse; }
@@ -1206,21 +1209,22 @@ body.cursor-hover .cursor-ring{
 
 .feature__title{
   font-size: clamp(54px, 9.5vw, 136px);
-  margin: 20px 0 28px;
+  margin: 16px 0 22px;
   color: var(--ink);
+  line-height: 0.94;
 }
 .feature__body{
   color: var(--ink-dim);
-  font-size: 18px;
-  line-height: 1.8;
-  max-width: 500px;
-  margin-bottom: 32px;
+  font-size: clamp(16px, 1.15vw, 18px);
+  line-height: 1.68;
+  max-width: 480px;
+  margin-bottom: 24px;
 }
 .feature--reverse .feature__body{ margin-left: auto; }
 .feature__list{
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 .feature__list li{
   display: flex;
@@ -1230,7 +1234,7 @@ body.cursor-hover .cursor-ring{
   color: var(--ink);
   text-shadow: var(--text-shadow);
   border-top: 1px solid var(--line-soft);
-  padding-top: 16px;
+  padding-top: 12px;
 }
 .feature__list li b{
   font-family: var(--font-display);
@@ -1330,7 +1334,7 @@ body.cursor-hover .cursor-ring{
   min-height: clamp(560px, 76vh, 860px);
   display: grid;
   align-content: center;
-
+  transform: translateY(clamp(-20px, -2vh, -10px));
 }
 .quote-carousel__header,
 .flags-carousel__header{
@@ -2009,7 +2013,7 @@ body.cursor-hover .cursor-ring{
    shadow contribution where a child re-declares its own */
 .feature__title .holo-text,
 .hero__title .line--accent,
-.galaxy__title em,
+
 .cta__title span,
 .quote-carousel__title .holo-text,
 .flags-carousel__title .holo-text,
@@ -2024,6 +2028,7 @@ body.cursor-hover .cursor-ring{
    ========================================================= */
 @media (max-width: 900px){
   .feature > .wrap{
+    min-height: auto;
     grid-template-columns: 1fr;
   }
   .feature__wrap,

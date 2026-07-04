@@ -447,21 +447,21 @@
     // -- glowing core sprite, blooms in once mostly gathered --
     const coreMat = new THREE.SpriteMaterial({
       map: glowTex,
-      color: 0xb8f2ff,
+      color: 0x8b5cf6,
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
       opacity: 0,
     });
     core = new THREE.Sprite(coreMat);
-    core.scale.set(6, 6, 1);
+    core.scale.set(1, 1, 1);
     group.add(core);
 
     let gatherProgress = reduceMotion ? 1 : 0;
     let idleRotation = 0;
     let lastTime = null;
     const posAttr = geometry.attributes.position;
-    const hover = { active: false, x: 0, y: 0, radius: isSmall ? 64 : 92 };
+    const hover = { active: false, x: 0, y: 0, radius: isSmall ? 32 : 64 };
     const hoverVec = new THREE.Vector3();
 
     section.addEventListener("mousemove", (event) => {
@@ -484,10 +484,10 @@
 
     function tick(time) {
       if (lastTime === null) lastTime = time;
-      const dt = Math.min(0.05, (time - lastTime) / 1000);
+      const dt = Math.min(0.5, (time - lastTime) / 1000);
       lastTime = time;
 
-      idleRotation += dt * 0.22; // faster idle spin
+      idleRotation += dt * 0.42; // faster idle spin
       group.rotation.y = idleRotation;
       group.rotation.x = Math.sin(time * 0.00018) * 0.05;
       group.updateMatrixWorld();
