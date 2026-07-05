@@ -1214,7 +1214,6 @@
   safeRun("interactiveObjects", function () {
     const heroOrbitals = gsap.utils.toArray(".hero__orbital");
     const ctaTokens = gsap.utils.toArray(".cta__token");
-    if (!heroOrbitals.length && !ctaTokens.length) return;
 
     ctaTokens.forEach((node, index) => {
       gsap.to(node, {
@@ -1228,6 +1227,32 @@
     });
 
     const hero = document.querySelector(".hero");
+
+    function setupPullField(container, selector, options) {
+      if (!container) return;
+      const nodes = Array.from(container.querySelectorAll(selector));
+      if (!nodes.length) return;
+
+      const maxX = options && options.maxX != null ? options.maxX : 34;
+      const maxY = options && options.maxY != null ? options.maxY : 26;
+      const duration = options && options.duration != null ? options.duration : 0.42;
+      const baseDepth = options && options.baseDepth != null ? options.baseDepth : 0.12;
+      const step = options && options.step != null ? options.step : 0.02;
+
+      nodes.forEach((node, index) => {
+        if (!node.dataset.depth) {
+          node.dataset.depth = String(baseDepth + (index % 3) * step);
+        }
+        node.classList.add("pull-reactive");
+      });
+
+      container.addEventListener("mousemove", (event) => applyParallax(container, selector, event, { maxX, maxY, duration }));
+      container.addEventListener("mouseleave", () => {
+        nodes.forEach((node) => {
+          gsap.to(node, { x: 0, y: 0, duration, ease: "power2.out", overwrite: "auto" });
+        });
+      });
+    }
     if (heroOrbitals.length && hero && !reduceMotion) {
       const clusterOffsets = [
         { x: -206, y: 34, scale: 0.98, rotate: -8 },
@@ -1332,29 +1357,33 @@
 
     const cta = document.querySelector(".cta");
 
-    function applyParallax(container, selector, event) {
+    function applyParallax(container, selector, event, options) {
       if (!container) return;
       const rect = container.getBoundingClientRect();
       const rx = ((event.clientX - rect.left) / rect.width) - 0.5;
       const ry = ((event.clientY - rect.top) / rect.height) - 0.5;
+      const maxX = options && options.maxX != null ? options.maxX : 42;
+      const maxY = options && options.maxY != null ? options.maxY : 34;
+      const duration = options && options.duration != null ? options.duration : 0.5;
 
       container.querySelectorAll(selector).forEach((node) => {
         const depth = parseFloat(node.dataset.depth || "0.18");
         if (selector === ".hero__orbital") {
           gsap.to(node, {
-            "--orbital-mouse-x": (rx * 42 * depth).toFixed(2) + "px",
-            "--orbital-mouse-y": (ry * 34 * depth).toFixed(2) + "px",
-            duration: 0.5,
+            "--orbital-mouse-x": (rx * maxX * depth).toFixed(2) + "px",
+            "--orbital-mouse-y": (ry * maxY * depth).toFixed(2) + "px",
+            duration,
             ease: "power2.out"
           });
           return;
         }
 
         gsap.to(node, {
-          x: rx * 42 * depth,
-          y: ry * 34 * depth,
-          duration: 0.5,
-          ease: "power2.out"
+          x: rx * maxX * depth,
+          y: ry * maxY * depth,
+          duration,
+          ease: "power2.out",
+          overwrite: "auto"
         });
       });
     }
@@ -1381,6 +1410,18 @@
         });
       });
     }
+
+    setupPullField(document.querySelector(".hero-copy"), ".hero__content", { maxX: 100, maxY: 90, baseDepth: 0.14 });
+    setupPullField(document.querySelector(".galaxy"), ".galaxy__content", { maxX: 100, maxY: 90, baseDepth: 0.14 });
+    document.querySelectorAll(".feature").forEach((section) => {
+      setupPullField(section, ".feature__wrap", { maxX: 100, maxY: 90, baseDepth: 0.12 });
+    });
+    setupPullField(document.querySelector(".stats"), ".stats__intro, .stat", { maxX: 100, maxY: 90, baseDepth: 0.12 });
+    setupPullField(document.querySelector(".quote-carousel"), ".quote-carousel__header, .quote-carousel__viewport", { maxX: 100, maxY: 90, baseDepth: 0.1 });
+    setupPullField(document.querySelector(".flags-carousel"), ".flags-carousel__header, .flags-carousel__viewport", { maxX: 100, maxY: 90, baseDepth: 0.1 });
+    setupPullField(document.querySelector(".ball-gallery"), ".ball-gallery__copy, .ball-gallery__hud", { maxX: 100, maxY: 90, baseDepth: 0.1 });
+    setupPullField(document.querySelector(".statement"), ".statement .wrap", { maxX: 100, maxY: 90, baseDepth: 0.1 });
+    setupPullField(document.querySelector(".cta"), ".cta__content, .cta__tokens", { maxX: 100, maxY: 90, baseDepth: 0.1 });
   });
 
   function clampFloatingText() {
@@ -1712,7 +1753,7 @@
       });
     });
 
-    charReveal(document.querySelector(".stats__intro .feature__title"), { variant: "collide" });
+    charReveal(document.querySelector(".stats__intro .feature__title"), { variant: "collide", holdUntilEnd: true });
     revealAndFade(".stats__intro .eyebrow", { variant: "flip", y: 24 });
     revealAndFade(".stat", { y: 32, stagger: 0.05, variant: "bounce" });
   });
