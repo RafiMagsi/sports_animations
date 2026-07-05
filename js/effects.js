@@ -61,8 +61,10 @@
      hang anything indefinitely.
      --------------------------------------------------------- */
   function setupBackgroundVideo() {
+    const root = document.querySelector(".bg-video");
     const video = document.querySelector(".bg-video__src");
     const canvas = document.querySelector(".bg-video__canvas");
+    if (root && root.dataset.disabled === "true") return;
     if (!video || !canvas) return;
 
     const ctx = canvas.getContext("2d");
@@ -1018,46 +1020,202 @@
      own slow sine paths, with a light scroll-linked parallax so
      they're not purely decorative-static.
      --------------------------------------------------------- */
+  function setupSectionSceneVideos() {
+    document.querySelectorAll(".section-scene__video").forEach((layer) => {
+      const section = layer.parentElement;
+      const video = layer.querySelector(".section-scene__video-src");
+      const canvas = layer.querySelector(".section-scene__video-canvas");
+      if (!section || !video || !canvas) return;
+
+      const ctx = canvas.getContext("2d");
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      let dims = sizeCanvasToParent(canvas, dpr);
+      let duration = 0;
+      let activeProgress = 0;
+      let seeking = false;
+      let pendingTime = null;
+
+      video.pause();
+      video.removeAttribute("autoplay");
+      video.loop = false;
+
+      function drawFrame() {
+        if (!video.videoWidth || !video.videoHeight) return;
+        const cw = dims.w;
+        const ch = dims.h;
+        const scale = Math.max(cw / video.videoWidth, ch / video.videoHeight);
+        const dw = video.videoWidth * scale;
+        const dh = video.videoHeight * scale;
+        try {
+          ctx.clearRect(0, 0, cw, ch);
+          ctx.filter = "saturate(1.06) contrast(1.04) brightness(0.76)";
+          ctx.drawImage(video, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+          ctx.filter = "none";
+        } catch (err) {
+          /* ignore drawImage restrictions under file:// */
+        }
+      }
+
+      function seekTo(el, t, timeoutMs) {
+        return new Promise((resolve) => {
+          let done = false;
+          const finish = () => {
+            if (done) return;
+            done = true;
+            el.removeEventListener("seeked", onSeeked);
+            clearTimeout(timer);
+            resolve();
+          };
+          const onSeeked = finish;
+          const timer = setTimeout(finish, timeoutMs || 350);
+          el.addEventListener("seeked", onSeeked);
+          try {
+            el.currentTime = t;
+          } catch (e) {
+            finish();
+          }
+        });
+      }
+
+      function queueSeek(time) {
+        pendingTime = time;
+        if (seeking) return;
+        seeking = true;
+        seekTo(video, pendingTime).then(() => {
+          drawFrame();
+          seeking = false;
+          if (pendingTime !== null && Math.abs(video.currentTime - pendingTime) > 0.02) {
+            const next = pendingTime;
+            pendingTime = null;
+            queueSeek(next);
+          } else {
+            pendingTime = null;
+          }
+        });
+      }
+
+      function bindScroll() {
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            activeProgress = self.progress;
+            if (!duration || isNaN(duration)) return;
+            queueSeek(activeProgress * duration);
+          }
+        });
+      }
+
+      function start() {
+        duration = video.duration || 0;
+        drawFrame();
+        bindScroll();
+      }
+
+      if (video.readyState >= 1) start();
+      else video.addEventListener("loadedmetadata", start, { once: true });
+
+      window.addEventListener("resize", () => {
+        dims = sizeCanvasToParent(canvas, dpr);
+        drawFrame();
+      });
+    });
+  }
+
   function setupFeatureAmbient() {
-    document.querySelectorAll(".feature__ambient").forEach((canvas) => {
+    const VARIANTS = {
+      constellation: { colors: ["#8fe7ff", "#b79dff", "#ffd0ef"], count: 44, size: [1.2, 3.2], drift: 0.22, connect: true, streak: 0.16, glow: 0.16 },
+      aurora: { colors: ["#22d3ee", "#72f1ff", "#8b5cf6"], count: 28, size: [2.2, 7.6], drift: 0.12, connect: false, streak: 0.42, glow: 0.3 },
+      pulsefield: { colors: ["#ff9fe2", "#8b5cf6", "#e7ff95"], count: 22, size: [6, 18], drift: 0.1, connect: false, streak: 0.08, glow: 0.42 },
+      "halo-rain": { colors: ["#8fe7ff", "#ffffff", "#ff9fe2"], count: 54, size: [1, 2.8], drift: 0.3, connect: false, streak: 0.54, glow: 0.12 },
+      "stadium-dust": { colors: ["#f4f6f2", "#22d3ee", "#ffd38b"], count: 64, size: [0.8, 2.4], drift: 0.34, connect: false, streak: 0.2, glow: 0.1 },
+      "winner-bloom": { colors: ["#e7ff95", "#ff9fe2", "#8fe7ff"], count: 34, size: [3, 10], drift: 0.18, connect: true, streak: 0.22, glow: 0.34 },
+      "hero-aura": { colors: ["#8fe7ff", "#b79dff", "#ffffff"], count: 26, size: [2.6, 8.8], drift: 0.14, connect: false, streak: 0.28, glow: 0.28 }
+    };
+
+    document.querySelectorAll(".section-scene__glitter").forEach((canvas) => {
       const ctx = canvas.getContext("2d");
       let dims = sizeCanvasToParent(canvas);
-      const COLORS = ["#22d3ee", "#8b5cf6", "#f472b6"];
-      const ORB_COUNT = 6;
-      const orbs = [];
-      for (let i = 0; i < ORB_COUNT; i++) {
-        orbs.push({
-          baseX: Math.random(),
-          baseY: Math.random(),
-          r: 0.16 + Math.random() * 0.16,
-          speed: 0.15 + Math.random() * 0.2,
+      const variantName = canvas.dataset.glitterVariant || canvas.parentElement.dataset.glitterVariant || "constellation";
+      const variant = VARIANTS[variantName] || VARIANTS.constellation;
+      const particles = [];
+      for (let i = 0; i < variant.count; i++) {
+        particles.push({
+          x: Math.random(),
+          y: Math.random(),
+          size: variant.size[0] + (variant.size[1] - variant.size[0]) * Math.random(),
+          speed: 0.3 + Math.random() * 1.2,
           phase: Math.random() * Math.PI * 2,
-          color: COLORS[i % COLORS.length],
+          color: variant.colors[i % variant.colors.length],
+          orbit: 0.02 + Math.random() * 0.09,
+          alpha: 0.2 + Math.random() * 0.65
         });
       }
 
       let parallax = 0;
-      let lastTime = null;
 
       function draw(time) {
-        if (lastTime === null) lastTime = time;
-        lastTime = time;
         const cw = dims.w;
         const ch = dims.h;
         ctx.clearRect(0, 0, cw, ch);
         ctx.globalCompositeOperation = "lighter";
-        orbs.forEach((o) => {
-          const t = time * 0.00045 * o.speed + o.phase; // faster drift
-          const x = (o.baseX + Math.sin(t) * 0.06) * cw;
-          const y = (o.baseY + Math.cos(t * 0.8) * 0.05) * ch + parallax * 40;
-          const r = o.r * Math.min(cw, ch);
-          const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-          g.addColorStop(0, o.color + "26"); // ~15% alpha
-          g.addColorStop(1, o.color + "00");
+
+        if (variant.streak > 0.15) {
+          for (let i = 0; i < 4; i++) {
+            const offset = (time * 0.00008 * (i + 1)) % 1;
+            const x = cw * (0.15 + i * 0.2);
+            const y = ch * ((offset + i * 0.18) % 1);
+            const grad = ctx.createLinearGradient(x, y - ch * 0.18, x + cw * 0.12, y + ch * 0.18);
+            grad.addColorStop(0, "rgba(255,255,255,0)");
+            grad.addColorStop(0.5, i % 2 === 0 ? "rgba(143,231,255,0.14)" : "rgba(255,159,226,0.12)");
+            grad.addColorStop(1, "rgba(255,255,255,0)");
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 2 + i * 0.35;
+            ctx.beginPath();
+            ctx.moveTo(x, y - ch * 0.16);
+            ctx.lineTo(x + cw * 0.1, y + ch * 0.16);
+            ctx.stroke();
+          }
+        }
+
+        particles.forEach((particle, index) => {
+          const t = time * 0.00034 * particle.speed + particle.phase;
+          const x = (particle.x + Math.sin(t) * particle.orbit) * cw;
+          const y = (particle.y + Math.cos(t * (1 + variant.drift)) * particle.orbit * 0.9) * ch + parallax * 32;
+          const radius = particle.size * (1 + Math.sin(t * 0.6) * variant.glow * 0.26);
+          const g = ctx.createRadialGradient(x, y, 0, x, y, radius * 10);
+          g.addColorStop(0, particle.color + "66");
+          g.addColorStop(0.35, particle.color + "24");
+          g.addColorStop(1, particle.color + "00");
           ctx.fillStyle = g;
           ctx.beginPath();
-          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.arc(x, y, radius * 10, 0, Math.PI * 2);
           ctx.fill();
+
+          ctx.globalAlpha = particle.alpha;
+          ctx.fillStyle = particle.color;
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+
+          if (variant.connect && index > 0) {
+            const prev = particles[index - 1];
+            const px = (prev.x + Math.sin(time * 0.00034 * prev.speed + prev.phase) * prev.orbit) * cw;
+            const py = (prev.y + Math.cos((time * 0.00034 * prev.speed + prev.phase) * (1 + variant.drift)) * prev.orbit * 0.9) * ch + parallax * 32;
+            const dist = Math.hypot(x - px, y - py);
+            if (dist < Math.min(cw, ch) * 0.24) {
+              ctx.strokeStyle = "rgba(190, 220, 255, 0.08)";
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(px, py);
+              ctx.lineTo(x, y);
+              ctx.stroke();
+            }
+          }
         });
         ctx.globalCompositeOperation = "source-over";
       }
@@ -1917,6 +2075,7 @@
     // ".intro"'s pinned bottom edge — see bindScroll() below.
     safeRun("setupIntro", setupIntro);
     safeRun("setupBackgroundVideo", setupBackgroundVideo);
+    safeRun("setupSectionSceneVideos", setupSectionSceneVideos);
     safeRun("setupHeroStage", setupHeroStage);
     safeRun("setupGalaxy", setupGalaxy);
     safeRun("setupFeatureAmbient", setupFeatureAmbient);

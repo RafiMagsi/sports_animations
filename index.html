@@ -54,7 +54,7 @@
      "background.mp4") and it takes over automatically, no code changes.
      Until then, it falls through to the hotlinked placeholder clip below
      so the site works today. -->
-<div class="bg-video">
+<div class="bg-video" data-disabled="true" aria-hidden="true">
   <video class="bg-video__src" muted playsinline preload="auto" tabindex="-1">
     <source src="assets/video/background.mp4" type="video/mp4">
     <source src="https://videos.pexels.com/video-files/31472390/13423986_2560_1440_24fps.mp4" type="video/mp4">
@@ -130,11 +130,20 @@
        here is positioned/timed the same floating way as the Speed/
        Power word reveals, just scoped to hero's own approach instead
        of scattered page-wide. ============ -->
-  <section class="hero" id="hero">
-    <canvas class="hero__stage" aria-hidden="true"></canvas>
+  <section class="hero section-scene section-scene--video" id="hero">
+    <div class="section-scene__video" aria-hidden="true">
+      <video class="section-scene__video-src" muted playsinline autoplay loop preload="auto" tabindex="-1">
+        <source src="assets/video/sections/hero.mp4" type="video/mp4">
+        <source src="https://videos.pexels.com/video-files/31472390/13423986_2560_1440_24fps.mp4" type="video/mp4">
+      </video>
+      <canvas class="section-scene__video-canvas"></canvas>
+      <div class="section-scene__scrim"></div>
+      <div class="section-scene__grain"></div>
+    </div>
+    <!-- <canvas class="hero__stage" aria-hidden="true"></canvas>
     <model-viewer
       class="hero__ball-model"
-      src="assets/football-models/world_cup_26_ball.glb"
+      src="assets/football-models/al_rihla_-_fifa_world_cup_qatar_2022.glb"
       camera-controls
       disable-pan
       disable-zoom
@@ -146,7 +155,7 @@
       exposure="1.12"
       interaction-prompt="none"
       ar="false">
-    </model-viewer>
+    </model-viewer> -->
     <div class="hero__flash" aria-hidden="true">
       <div class="hero__flash-viewport">
         <span class="hero__flash-line">Every champion starts somewhere.</span>
@@ -161,7 +170,7 @@
         <span class="hero__flash-line">Road to FIFA World Cup 2026.</span>
       </div>
     </div>
-    <div class="hero__orbitals" aria-hidden="true">
+    <!-- <div class="hero__orbitals" aria-hidden="true">
         <div class="hero__orbital hero__orbital--bottom" data-depth="0.35">
           <span class="hero__orbital-ball"></span>
           <span class="hero__orbital-copy">Elite Match Ball</span>
@@ -178,10 +187,11 @@
           <span class="hero__orbital-ring"></span>
           <span class="hero__orbital-copy">Control. Precision. Speed.</span>
         </div>
-      </div>
+      </div> -->
   </section>
 
-  <section class="hero-copy" aria-labelledby="hero-copy-title">
+  <section class="hero-copy section-scene section-scene--glitter" aria-labelledby="hero-copy-title" data-glitter-variant="hero-aura">
+    <canvas class="section-scene__glitter" aria-hidden="true"></canvas>
     <div class="hero__content">
       <h1 class="hero__title display" id="hero-copy-title">
         <span class="line"><span>The Future of</span></span>
@@ -204,7 +214,16 @@
   <!-- ============ SPECIAL PROMO — repurposes the galaxy particle-converge
        visual as a backdrop; not one of the 7 numbered sections, so it
        carries no index badge (same treatment as the hero). ============ -->
-  <section class="galaxy" id="promo">
+  <section class="galaxy section-scene section-scene--video" id="promo">
+    <div class="section-scene__video" aria-hidden="true">
+      <video class="section-scene__video-src" muted playsinline autoplay loop preload="auto" tabindex="-1">
+        <source src="assets/video/sections/promo.mp4" type="video/mp4">
+        <source src="https://videos.pexels.com/video-files/31472390/13423986_2560_1440_24fps.mp4" type="video/mp4">
+      </video>
+      <canvas class="section-scene__video-canvas"></canvas>
+      <div class="section-scene__scrim"></div>
+      <div class="section-scene__grain"></div>
+    </div>
     <canvas class="galaxy__canvas"></canvas>
     <!-- Blurred, darkened corners (center stays untouched/sharp) —
          boosts contrast so the gathering particles read clearly
@@ -221,8 +240,16 @@
   </section>
 
   <!-- ============ SECTION 1 — PREMIUM FOOTBALL GEAR ============ -->
-  <section class="feature" id="gear">
-    <canvas class="feature__ambient"></canvas>
+  <section class="feature section-scene section-scene--video" id="gear">
+    <div class="section-scene__video" aria-hidden="true">
+      <video class="section-scene__video-src" muted playsinline autoplay loop preload="auto" tabindex="-1">
+        <source src="assets/video/sections/gear.mp4" type="video/mp4">
+        <source src="https://videos.pexels.com/video-files/31472390/13423986_2560_1440_24fps.mp4" type="video/mp4">
+      </video>
+      <canvas class="section-scene__video-canvas"></canvas>
+      <div class="section-scene__scrim"></div>
+      <div class="section-scene__grain"></div>
+    </div>
     <div class="feature__index">01 / 07</div>
     <div class="wrap">
       <div class="feature__wrap">
@@ -239,11 +266,12 @@
   </section>
 
   <!-- ============ STATS — product specs ============ -->
-  <section class="stats" id="numbers">
+  <section class="stats section-scene section-scene--glitter" id="numbers" data-glitter-variant="constellation">
+    <canvas class="section-scene__glitter" aria-hidden="true"></canvas>
     <div class="wrap">
       <div class="stats__intro">
         <div class="eyebrow">By The Numbers</div>
-        <h2 class="feature__title display">Specs that<br>speak for<br>themselves.</h2>
+        <h2 class="feature__title ">Specs that<br>speak for<br>themselves.</h2>
       </div>
       <div class="stats__grid">
         <div class="stat">
@@ -266,7 +294,16 @@
     </div>
   </section>
 
-  <section class="quote-carousel" id="stories">
+  <section class="quote-carousel section-scene section-scene--video" id="stories">
+    <div class="section-scene__video" aria-hidden="true">
+      <video class="section-scene__video-src" muted playsinline autoplay loop preload="auto" tabindex="-1">
+        <source src="assets/video/sections/stories.mp4" type="video/mp4">
+        <source src="https://videos.pexels.com/video-files/31472390/13423986_2560_1440_24fps.mp4" type="video/mp4">
+      </video>
+      <canvas class="section-scene__video-canvas"></canvas>
+      <div class="section-scene__scrim"></div>
+      <div class="section-scene__grain"></div>
+    </div>
     <div class="wrap quote-carousel__wrap">
       <div class="quote-carousel__header">
         <div class="eyebrow">Floating Match Stories</div>
@@ -300,8 +337,8 @@
   </section>
 
   <!-- ============ SECTION 2 — TRAINING ACADEMY ============ -->
-  <section class="feature feature--reverse" id="training">
-    <canvas class="feature__ambient"></canvas>
+  <section class="feature feature--reverse section-scene section-scene--glitter" id="training" data-glitter-variant="aurora">
+    <canvas class="feature__ambient section-scene__glitter" aria-hidden="true"></canvas>
     <div class="feature__index">02 / 07</div>
     <div class="wrap">
       <div class="feature__wrap">
@@ -318,8 +355,16 @@
   </section>
 
   <!-- ============ SECTION 3 — MATCH ANALYSIS ============ -->
-  <section class="feature" id="match">
-    <canvas class="feature__ambient"></canvas>
+  <section class="feature section-scene section-scene--video" id="match">
+    <div class="section-scene__video" aria-hidden="true">
+      <video class="section-scene__video-src" muted playsinline autoplay loop preload="auto" tabindex="-1">
+        <source src="assets/video/sections/match.mp4" type="video/mp4">
+        <source src="https://videos.pexels.com/video-files/31472390/13423986_2560_1440_24fps.mp4" type="video/mp4">
+      </video>
+      <canvas class="section-scene__video-canvas"></canvas>
+      <div class="section-scene__scrim"></div>
+      <div class="section-scene__grain"></div>
+    </div>
     <div class="feature__index">03 / 07</div>
     <div class="wrap">
       <div class="feature__wrap">
@@ -336,8 +381,8 @@
   </section>
 
   <!-- ============ SECTION 4 — FAN COLLECTION ============ -->
-  <section class="feature feature--reverse" id="fan">
-    <canvas class="feature__ambient"></canvas>
+  <section class="feature feature--reverse section-scene section-scene--glitter" id="fan" data-glitter-variant="pulsefield">
+    <canvas class="feature__ambient section-scene__glitter" aria-hidden="true"></canvas>
     <div class="feature__index">04 / 07</div>
     <div class="wrap">
       <div class="feature__wrap">
@@ -353,7 +398,16 @@
     </div>
   </section>
 
-  <section class="flags-carousel" id="flags">
+  <section class="flags-carousel section-scene section-scene--video" id="flags">
+    <div class="section-scene__video" aria-hidden="true">
+      <video class="section-scene__video-src" muted playsinline autoplay loop preload="auto" tabindex="-1">
+        <source src="assets/video/sections/flags.mp4" type="video/mp4">
+        <source src="https://videos.pexels.com/video-files/31472390/13423986_2560_1440_24fps.mp4" type="video/mp4">
+      </video>
+      <canvas class="section-scene__video-canvas"></canvas>
+      <div class="section-scene__scrim"></div>
+      <div class="section-scene__grain"></div>
+    </div>
     <div class="wrap flags-carousel__wrap">
       <div class="flags-carousel__header">
         <div class="eyebrow">Tournament Nations</div>
@@ -390,7 +444,8 @@
     </div>
   </section>
 
-  <section class="ball-gallery" id="ball-gallery">
+  <section class="ball-gallery section-scene section-scene--glitter" id="ball-gallery" data-glitter-variant="halo-rain">
+    <canvas class="section-scene__glitter" aria-hidden="true"></canvas>
     <div class="wrap ball-gallery__wrap">
       <div class="ball-gallery__copy">
         <div class="eyebrow">Match Ball Archive</div>
@@ -447,8 +502,16 @@
   </section>
 
   <!-- ============ SECTION 5 — WORLD CUP NEWS HUB ============ -->
-  <section class="feature" id="news">
-    <canvas class="feature__ambient"></canvas>
+  <section class="feature section-scene section-scene--video" id="news">
+    <div class="section-scene__video" aria-hidden="true">
+      <video class="section-scene__video-src" muted playsinline autoplay loop preload="auto" tabindex="-1">
+        <source src="assets/video/sections/news.mp4" type="video/mp4">
+        <source src="https://videos.pexels.com/video-files/31472390/13423986_2560_1440_24fps.mp4" type="video/mp4">
+      </video>
+      <canvas class="section-scene__video-canvas"></canvas>
+      <div class="section-scene__scrim"></div>
+      <div class="section-scene__grain"></div>
+    </div>
     <div class="feature__index">05 / 07</div>
     <div class="wrap">
       <div class="feature__wrap">
@@ -465,8 +528,8 @@
   </section>
 
   <!-- ============ SECTION 6 — COMMUNITY & EVENTS ============ -->
-  <section class="feature feature--reverse" id="community">
-    <canvas class="feature__ambient"></canvas>
+  <section class="feature feature--reverse section-scene section-scene--glitter" id="community" data-glitter-variant="stadium-dust">
+    <canvas class="feature__ambient section-scene__glitter" aria-hidden="true"></canvas>
     <div class="feature__index">06 / 07</div>
     <div class="wrap">
       <div class="feature__wrap">
@@ -483,14 +546,24 @@
   </section>
 
   <!-- ============ STATEMENT — brand manifesto ============ -->
-  <section class="statement">
+  <section class="statement section-scene section-scene--video">
+    <div class="section-scene__video" aria-hidden="true">
+      <video class="section-scene__video-src" muted playsinline autoplay loop preload="auto" tabindex="-1">
+        <source src="assets/video/sections/statement.mp4" type="video/mp4">
+        <source src="https://videos.pexels.com/video-files/31472390/13423986_2560_1440_24fps.mp4" type="video/mp4">
+      </video>
+      <canvas class="section-scene__video-canvas"></canvas>
+      <div class="section-scene__scrim"></div>
+      <div class="section-scene__grain"></div>
+    </div>
     <div class="wrap">
       <p class="statement__text">A football is not just leather and air. It's the difference between a strike that finds the net <span class="accent">and</span> one that doesn't — and that difference is built in, not left to chance.</p>
     </div>
   </section>
 
   <!-- ============ SECTION 7 — CONTACT / JOIN NOW (final CTA) ============ -->
-  <section class="cta" id="join">
+  <section class="cta section-scene section-scene--glitter" id="join" data-glitter-variant="winner-bloom">
+    <canvas class="section-scene__glitter" aria-hidden="true"></canvas>
     <canvas class="cta__sparkles"></canvas>
     <div class="wrap cta__content">
       <div class="eyebrow" style="justify-content:center;">07 / 07 — Contact / Join Now</div>

@@ -940,21 +940,11 @@
      --------------------------------------------------------- */
   safeRun("galaxyText", function () {
   if (document.querySelector(".galaxy__content")) {
-    gsap.set(".galaxy__content", { opacity: 0, y: 36 });
-
-    gsap.timeline({
-      scrollTrigger: {
-        trigger: ".galaxy",
-        start: "top top",
-        end: "+=195%",
-        scrub: true,
-      },
-    })
-      .to(".galaxy__content", { opacity: 1, y: 0, duration: 0.14, ease: "power2.out" }, 0)
-      .to(".galaxy__content", { opacity: 1, y: 0, duration: 0.16 }, 0.14) // hold, fully readable
-      .to(".galaxy__content", { opacity: 0, y: -30, filter: "blur(8px)", duration: 0.16, ease: "power2.in" }, 0.3);
-
-    charReveal(document.querySelector(".galaxy__title"), { variant: "zoom" });
+    gsap.set(".galaxy__content", { opacity: 1, y: 0, filter: "none" });
+    charReveal(document.querySelector(".galaxy__title"), { variant: "zoom", holdUntilEnd: true });
+    revealAndFade(".galaxy__eyebrow", { variant: "flip", y: 18 });
+    revealAndFade(".galaxy__sub", { variant: "smoke", y: 26 });
+    revealAndFade(".galaxy__cta", { variant: "bounce", y: 22 });
   }
   }); // end safeRun("galaxyText")
 

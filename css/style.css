@@ -96,6 +96,58 @@ h1,h2,h3,p{ margin: 0; text-shadow: var(--text-shadow); }
 
 main{ position: relative; z-index: 1; }
 
+.section-scene{
+  position: relative;
+  isolation: isolate;
+}
+.section-scene__video,
+.section-scene__glitter{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+.section-scene__video{
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(9,16,28,0.22), rgba(4,6,12,0.84)),
+    var(--scene-bg);
+}
+.section-scene__video-src{
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+.section-scene__video-canvas{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.section-scene__scrim{
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(4,6,12,0.66) 0%, rgba(4,6,12,0.3) 26%, rgba(4,6,12,0.16) 52%, rgba(4,6,12,0.42) 100%),
+    radial-gradient(70% 80% at 18% 22%, rgba(0,184,217,0.14), transparent 58%),
+    radial-gradient(70% 80% at 82% 70%, rgba(255,159,226,0.14), transparent 62%);
+}
+.section-scene__grain{
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+.section-scene__glitter{
+  display: block;
+}
+
 .wrap{
   max-width: var(--container);
   margin: 0 auto;
@@ -642,6 +694,9 @@ body.cursor-hover .cursor-ring{
   z-index: 0;
   overflow: hidden;
   background: var(--scene-bg);
+}
+.bg-video[data-disabled="true"]{
+  display: none;
 }
 .bg-video__src{
   position: absolute;
@@ -1368,6 +1423,16 @@ body.cursor-hover .cursor-ring{
   overflow: hidden;
   z-index: 4;
 }
+.feature > .feature__index,
+.feature > .section__index,
+.stats > .section__index,
+.quote-carousel > .section__index,
+.flags-carousel > .section__index,
+.ball-gallery > .section__index,
+.statement > .section__index,
+.cta > .section__index{
+  z-index: 2;
+}
 .feature > .wrap{
   width: 100%;
   min-height: calc(100svh - clamp(152px, 18vh, 232px));
@@ -1880,6 +1945,7 @@ body.cursor-hover .cursor-ring{
   top: clamp(88px, 11vh, 132px);
   left: 0;
   max-width: min(560px, 52vw);
+  z-index: 2;
 }
 .ball-gallery__title{
   margin: 18px 0 18px;
@@ -1901,6 +1967,7 @@ body.cursor-hover .cursor-ring{
   display: grid;
   gap: 14px;
   justify-items: end;
+  z-index: 2;
 }
 .ball-gallery__meta{
   min-width: min(260px, 32vw);
