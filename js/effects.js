@@ -1102,6 +1102,7 @@
   function setupHeroStage() {
     const section = document.querySelector(".hero");
     const canvas = document.querySelector(".hero__stage");
+    const heroModel = document.querySelector(".hero__ball-model");
     if (!section || !canvas || !window.THREE) return;
 
     const THREE = window.THREE;
@@ -1380,6 +1381,11 @@
     );
     ballRig.add(shell);
 
+    if (heroModel) {
+      ball.visible = false;
+      shell.material.opacity = 0;
+    }
+
     function createOrbitBand(cfg) {
       const positions = new Float32Array(cfg.count * 3);
       for (let i = 0; i < cfg.count; i++) {
@@ -1536,7 +1542,7 @@
       const envelope = heroStageEnvelope(scrollProgress);
       const idle = time * 0.00055;
 
-      const heroBallX = 9.2;
+      const heroBallX = -8.8;
       let posX = heroBallX;
       let posY = 0;
       let posZ = 0;
@@ -1592,13 +1598,13 @@
       sparkMaterial.opacity = 0.24 + opacity * 0.56;
       coreGlow.material.opacity = 0.34 + opacity * 0.44;
       flareGlow.material.opacity = 0.18 + opacity * 0.24;
-      shell.material.opacity = 0.08 + opacity * 0.1;
+      shell.material.opacity = heroModel ? 0 : 0.08 + opacity * 0.1;
       orbitA.material.opacity = 0.32 + opacity * 0.4;
       orbitB.material.opacity = 0.24 + opacity * 0.32;
       orbitC.material.opacity = 0.12 + opacity * 0.2;
 
       camera.position.z = 56 - scrollProgress * 7;
-      camera.lookAt(heroBallX * 0.34, 0, 0);
+      camera.lookAt(heroBallX * 0.18, 0, 0);
 
       renderer.render(scene, camera);
       requestAnimationFrame(tick);

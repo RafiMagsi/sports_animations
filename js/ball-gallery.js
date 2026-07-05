@@ -9,6 +9,9 @@
 
   if (!root || !stage || !items.length || !gsap || !ScrollTrigger) return;
 
+  const BALL_SPREAD = 0.82;
+  const BALL_PROGRESS_SPEED = 0.58;
+
   items.forEach((item, index) => {
     const viewer = item.querySelector("model-viewer");
     if (viewer) {
@@ -18,7 +21,7 @@
       viewer.setAttribute("min-camera-orbit", "auto auto 105%");
       viewer.setAttribute("max-camera-orbit", "auto auto 125%");
     }
-    item.dataset.offset = String(index / items.length);
+    item.dataset.offset = String(((1 - BALL_SPREAD) * 0.5) + (index / items.length) * BALL_SPREAD);
   });
 
   function wrap01(value) {
@@ -28,13 +31,13 @@
   function render(progress) {
     const width = stage.clientWidth || window.innerWidth;
     const height = window.innerHeight;
-    const startX = width * 1.16;
-    const endX = -width * 1.2;
+    const startX = width * 1.06;
+    const endX = -width * 1.08;
     const bandY = height * (window.innerWidth < 820 ? 0.5 : 0.46);
 
     items.forEach((item, index) => {
       const offset = Number(item.dataset.offset || 0);
-      const local = wrap01(progress * 0.94 + offset);
+      const local = wrap01(progress * BALL_PROGRESS_SPEED + offset);
       const pathX = gsap.utils.interpolate(startX, endX, local);
       const arc = Math.sin(local * Math.PI);
       const y = bandY - arc * height * 0.065 + (local - 0.5) * height * 0.022;
@@ -79,7 +82,7 @@
   const trigger = ScrollTrigger.create({
     trigger: root,
     start: "top top",
-    end: "+=320%",
+    end: "+=560%",
     pin: root,
     anticipatePin: 1,
     scrub: true,

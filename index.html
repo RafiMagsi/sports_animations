@@ -132,6 +132,21 @@
        of scattered page-wide. ============ -->
   <section class="hero" id="hero">
     <canvas class="hero__stage" aria-hidden="true"></canvas>
+    <model-viewer
+      class="hero__ball-model"
+      src="assets/football-models/world_cup_26_ball.glb"
+      camera-controls
+      disable-pan
+      disable-zoom
+      camera-orbit="0deg 78deg 112%"
+      field-of-view="24deg"
+      auto-rotate
+      rotation-per-second="16deg"
+      shadow-intensity="1.35"
+      exposure="1.12"
+      interaction-prompt="none"
+      ar="false">
+    </model-viewer>
     <div class="hero__flash" aria-hidden="true">
       <div class="hero__flash-viewport">
         <span class="hero__flash-line">Every champion starts somewhere.</span>

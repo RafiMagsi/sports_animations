@@ -192,10 +192,18 @@ body.cursor-hover .cursor-ring{
    that fade read as "glowing" rather than a flat cross-fade.
    ========================================================= */
 .floatwords{
-  display: none;
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 .floatphrase-layer{
-  display: none;
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 .floatwords__smoke{
   position: absolute;
@@ -211,6 +219,8 @@ body.cursor-hover .cursor-ring{
   pointer-events: none;
   overflow: hidden;
   isolation: isolate;
+  opacity: 0;
+  visibility: hidden;
 }
 .hero .section-overlay{ z-index: 1; }
 .cta .section-overlay{ z-index: 3; }
@@ -274,6 +284,7 @@ body.cursor-hover .cursor-ring{
   transform-style: preserve-3d;
   backface-visibility: hidden;
   will-change: transform, opacity, filter;
+  visibility: visible;
 }
 /* sized big per feedback, but capped so even a long word (Discipline,
    Performance) at a corner position can't push past the viewport edge
@@ -328,6 +339,7 @@ body.cursor-hover .cursor-ring{
   transform-style: preserve-3d;
   backface-visibility: hidden;
   will-change: transform, opacity, filter;
+  visibility: visible;
 }
 .floatphrase::before{
   content:'';
@@ -754,6 +766,31 @@ body.cursor-hover .cursor-ring{
   opacity: 1;
   mix-blend-mode: normal;
 }
+.hero__ball-model{
+  position: absolute;
+  left: clamp(2vw, 5vw, 7vw);
+  top: 50%;
+  width: min(34vw, 520px);
+  height: min(68vh, 620px);
+  z-index: 2;
+  transform: translateY(-50%);
+  pointer-events: none;
+  --poster-color: transparent;
+  --progress-bar-color: rgba(116,232,255,0.72);
+  --progress-mask: rgba(10,16,28,0.3);
+  background: transparent;
+  filter:
+    drop-shadow(0 22px 54px rgba(0,0,0,0.36))
+    drop-shadow(0 0 44px rgba(116,232,255,0.14));
+}
+.hero__ball-model::part(default-progress-bar),
+.hero__ball-model::part(default-progress-mask),
+.hero__ball-model::part(default-ar-button){
+  display: none;
+}
+.hero__ball-model::part(poster){
+  background: transparent;
+}
 .hero__content{
   position: relative;
   z-index: 2;
@@ -916,6 +953,13 @@ body.cursor-hover .cursor-ring{
   opacity: calc(var(--picker-focus, 0) * 0.9);
 }
 @media (max-width: 720px){
+  .hero__ball-model{
+    left: 50%;
+    top: 40%;
+    width: min(76vw, 420px);
+    height: min(42vh, 360px);
+    transform: translate(-50%, -50%);
+  }
   .hero__flash{
     left: 50%;
     right: auto;
@@ -1369,9 +1413,12 @@ body.cursor-hover .cursor-ring{
   font-size: clamp(54px, 9.5vw, 136px);
   margin: 16px 0 22px;
   color: var(--ink);
+  -webkit-text-fill-color: transparent;
   line-height: 0.94;
   position: relative;
   letter-spacing: 0.015em;
+  opacity: 1;
+  visibility: visible;
 }
 .feature__title::before,
 .quote-carousel__title::before,
@@ -2214,6 +2261,8 @@ body.cursor-hover .cursor-ring{
 .quote-carousel__title .ch,
 .flags-carousel__title .ch,
 .ball-gallery__title .ch{
+  display: inline-block;
+  opacity: 1;
   background: linear-gradient(180deg, #ffffff 0%, #f3fcff 14%, #8fe7ff 38%, #b79dff 66%, #ff97de 100%);
   -webkit-background-clip: text;
   background-clip: text;

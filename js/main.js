@@ -9,7 +9,16 @@
   try {
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SCROLL_SLOW_FACTOR = 2.1;
   const isTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+  const SECTION_PIN_RATIOS = {
+    hero: 1.28,
+    heroCopy: 0.88,
+    feature: 0.92,
+    stats: 1.16,
+    statement: 0.74,
+    cta: 0.78
+  };
 
   gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -95,6 +104,21 @@
 
   function floatBlur(px) {
     return px > 0 ? "blur(" + px + "px)" : "none";
+  }
+
+  function getSectionPinRatio(section) {
+    if (!section || !section.matches) return 0.84 * SCROLL_SLOW_FACTOR;
+    if (section.matches(".hero")) return SECTION_PIN_RATIOS.hero * SCROLL_SLOW_FACTOR;
+    if (section.matches(".hero-copy")) return SECTION_PIN_RATIOS.heroCopy * SCROLL_SLOW_FACTOR;
+    if (section.matches(".stats")) return SECTION_PIN_RATIOS.stats * SCROLL_SLOW_FACTOR;
+    if (section.matches(".statement")) return SECTION_PIN_RATIOS.statement * SCROLL_SLOW_FACTOR;
+    if (section.matches(".cta")) return SECTION_PIN_RATIOS.cta * SCROLL_SLOW_FACTOR;
+    return SECTION_PIN_RATIOS.feature * SCROLL_SLOW_FACTOR;
+  }
+
+  function getPinnedDistance(section) {
+    const ratio = getSectionPinRatio(section);
+    return Math.round(window.innerHeight * (window.innerWidth < 900 ? ratio * 0.7 : ratio));
   }
 
   function refreshVisibilityLifecycle(delay) {
@@ -256,6 +280,10 @@
     return node && node.closest ? node.closest(SECTION_SCOPE_SELECTOR) : null;
   }
 
+  function usesPinnedRevealWindow(scope) {
+    return !!(scope && scope.matches && scope.matches(".hero-copy, .galaxy, .feature, .stats, .quote-carousel, .flags-carousel, .ball-gallery, .statement, .cta"));
+  }
+
   function setupSectionIndices() {
     const sections = Array.from(document.querySelectorAll("main > section"))
       .filter((section) => !section.classList.contains("intro"));
@@ -308,6 +336,7 @@
 
     gsap.utils.toArray(targets).forEach((el, i) => {
       const scope = closestSectionScope(el) || el;
+      const pinnedWindow = usesPinnedRevealWindow(scope);
       let fromVars, toVars, exitVars, entranceEase;
 
       if (variant === "punch") {
@@ -369,8 +398,8 @@
         ease: entranceEase,
         scrollTrigger: {
           trigger: scope,
-          start: `top ${90 - stagger * i * 10}%`,
-          end: "top 18%",
+          start: pinnedWindow ? "top top" : `top ${90 - stagger * i * 10}%`,
+          end: pinnedWindow ? "+=78%" : "top 18%",
           scrub: true,
           invalidateOnRefresh: true
         },
@@ -381,8 +410,8 @@
         ease: "power1.in",
         scrollTrigger: {
           trigger: scope,
-          start: "bottom 60%",
-          end: "bottom -10%",
+          start: pinnedWindow ? "top top+=84%" : "bottom 60%",
+          end: pinnedWindow ? "top top+=148%" : "bottom -10%",
           scrub: true,
           invalidateOnRefresh: true
         },
@@ -401,8 +430,12 @@
     if (!el || reduceMotion) return;
     opts = opts || {};
     const scope = closestSectionScope(el) || el;
+    const pinnedWindow = usesPinnedRevealWindow(scope);
+    const holdUntilEnd = !!opts.holdUntilEnd;
     const variant = opts.variant || "zoom";
     const split = new SplitText(el, { type: "chars", charsClass: "ch" });
+    el.dataset.splitReady = "true";
+    gsap.set(el, { opacity: 1, visibility: "visible" });
     gsap.set(split.chars, { display: "inline-block", transformPerspective: 500 });
 
     let fromVars;
@@ -450,28 +483,32 @@
         ease: enterEase,
         scrollTrigger: {
           trigger: scope,
-          start: "top 90%",
-          end: "top 16%",
+          start: pinnedWindow ? "top top" : "top 90%",
+          end: pinnedWindow ? (holdUntilEnd ? "+=148%" : "+=112%") : "top 16%",
           scrub: true,
           invalidateOnRefresh: true
         },
       }
     );
-    // disappear too, not just reveal — floats back out of focus as it
-    // scrolls past, same blur+fade language as everything else on the
-    // site instead of just sitting there once revealed
-    gsap.set(el, { transformPerspective: 700 });
-    gsap.to(el, {
-      ...exitVars,
-      ease: exitEase,
-      scrollTrigger: {
-        trigger: scope,
-        start: "bottom 60%",
-        end: "bottom -10%",
-        scrub: true,
-        invalidateOnRefresh: true
-      },
-    });
+    if (!holdUntilEnd) {
+      // disappear too, not just reveal — floats back out of focus as it
+      // scrolls past, same blur+fade language as everything else on the
+      // site instead of just sitting there once revealed
+      gsap.set(el, { transformPerspective: 700 });
+      gsap.to(el, {
+        ...exitVars,
+        ease: exitEase,
+        scrollTrigger: {
+          trigger: scope,
+          start: pinnedWindow ? "top top+=118%" : "bottom 60%",
+          end: pinnedWindow ? "top top+=168%" : "bottom -10%",
+          scrub: true,
+          invalidateOnRefresh: true
+        },
+      });
+    } else {
+      gsap.set(split.chars, holdVars);
+    }
   }
 
   /* ---------------------------------------------------------
@@ -726,7 +763,7 @@
         scrollTrigger: {
           trigger: ".intro",
           start: "top top",
-          end: "+=220%",
+        end: "+=330%",
           scrub: true,
         },
       })
@@ -767,7 +804,7 @@
       scrollTrigger: {
         trigger: ".hero",
         start: "top top",
-        end: "+=58%",
+        end: "+=87%",
         scrub: true,
         invalidateOnRefresh: true,
         onLeave: () => {
@@ -823,14 +860,10 @@
   }
 
   /* ---------------------------------------------------------
-     5a. HERO FLASH SEQUENCE — the floating title cards that play as
-     the hero rises into view, landing exactly as runHeroIntro's own
-     title reveal takes over. Uses the hero's APPROACH scroll (its top
-     travelling from the bottom of the viewport up to the top), not
-     the hold/exit range runHeroIntro uses — no overlap between the
-     two timelines. Each line: blur into focus, hold, blur back out,
-     same floating language as the page-wide word reveals, just
-     centered and sequenced like trailer title cards.
+     5a. HERO FLASH SEQUENCE — the picker now lives INSIDE the hero's
+     pinned/sticky window, not on the approach before pinning. That
+     was the bug: the user asked for sticky-time animation and the
+     trigger was still `top 72% -> top top`, which is pre-pin.
      --------------------------------------------------------- */
   function runHeroFlash() {
     const lines = gsap.utils.toArray(".hero__flash-line");
@@ -847,10 +880,10 @@
     if (flash) gsap.set(flash, { opacity: 0, x: 22, filter: "blur(12px)" });
 
     function renderPicker(progress) {
-      const fadeIn = gsap.utils.clamp(0, 1, (progress - 0.14) / 0.12);
-      const fadeOut = 1 - gsap.utils.clamp(0, 1, (progress - 0.86) / 0.1);
+      const fadeIn = gsap.utils.clamp(0, 1, (progress - 0.18) / 0.18);
+      const fadeOut = 1 - gsap.utils.clamp(0, 1, (progress - 0.9) / 0.1);
       const visibility = fadeIn * fadeOut;
-      const pickerProgress = gsap.utils.clamp(0, 0.999, (progress - 0.2) / 0.58);
+      const pickerProgress = gsap.utils.clamp(0, 0.999, (progress - 0.24) / 0.54);
       const active = pickerProgress * (lines.length - 1);
 
       if (flash) {
@@ -890,13 +923,13 @@
 
     ScrollTrigger.create({
       trigger: ".hero",
-      start: "top bottom",
-      end: "top top",
+      start: "top top",
+      end: () => "+=" + Math.round(getPinnedDistance(document.querySelector(".hero")) * 0.94),
       scrub: true,
       onLeave: () => flash && gsap.set(flash, { opacity: 0 }),
       onLeaveBack: () => flash && gsap.set(flash, { opacity: 0 }),
-      onEnter: () => renderPicker(0.18),
-      onEnterBack: () => renderPicker(0.18),
+      onEnter: () => renderPicker(0),
+      onEnterBack: () => renderPicker(0),
       onUpdate: (self) => renderPicker(self.progress)
     });
   }
@@ -913,7 +946,7 @@
       scrollTrigger: {
         trigger: ".galaxy",
         start: "top top",
-        end: "+=130%",
+        end: "+=195%",
         scrub: true,
       },
     })
@@ -938,7 +971,7 @@
       scrollTrigger: {
         trigger: ".galaxy",
         start: "top top",
-        end: "+=130%",
+        end: "+=195%",
         scrub: true,
       },
     })
@@ -962,7 +995,28 @@
      --------------------------------------------------------- */
   safeRun("floatwordsGate", function () {
     gsap.utils.toArray(".section-overlay").forEach((layer) => {
-      gsap.set(layer, { opacity: 1 });
+      const section = layer.parentElement;
+      if (!section) return;
+
+      gsap.set(layer, { autoAlpha: 0 });
+
+      if (reduceMotion) {
+        gsap.set(layer, { autoAlpha: 1 });
+        return;
+      }
+
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true,
+          invalidateOnRefresh: true
+        }
+      })
+        .to(layer, { autoAlpha: 1, duration: 0.2, ease: "none" }, 0)
+        .to(layer, { autoAlpha: 1, duration: 0.58, ease: "none" }, 0.2)
+        .to(layer, { autoAlpha: 0, duration: 0.22, ease: "none" }, 0.78);
     });
   });
 
@@ -1047,8 +1101,8 @@
             // (92%->54%), the phrase owns the SECOND half (46%->6%),
             // with an 8-point gap between them so exactly one of the two
             // is ever visible at a time, never both.
-            start: "top 92%",
-            end: "top 54%",
+            start: "top top",
+            end: "+=96%",
             scrub: true,
             // hard kill-switch — see runHeroFlash's identical comment.
             // Guarantees this word can never linger visible once its
@@ -1149,8 +1203,8 @@
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: anchor,
-            start: "top 54%",
-            end: "bottom 24%",
+            start: "top top",
+            end: "+=172%",
             scrub: true,
             onLeave: () => gsap.set(phrase, { opacity: 0 }),
             onLeaveBack: () => gsap.set(phrase, { opacity: 0 }),
@@ -1207,7 +1261,7 @@
         const rect = node.getBoundingClientRect();
         const nodeCenterX = rect.left - heroRect.left + rect.width / 2;
         const nodeCenterY = rect.top - heroRect.top + rect.height / 2;
-        const targetCenterX = heroRect.width * 0.62 + target.x;
+        const targetCenterX = heroRect.width * 0.34 + target.x;
         const targetCenterY = heroRect.height * 0.52 + target.y;
         return {
           x: targetCenterX - nodeCenterX,
@@ -1532,7 +1586,7 @@
 
   safeRun("quoteCarousel", function () {
     setupScrollCarousel(".quote-carousel", ".quote-card", {
-      scrollLength: "320%",
+      scrollLength: "560%",
       entryOffset: 80,
       exitOffset: 120,
       trackYStart: 0,
@@ -1551,7 +1605,7 @@
 
   safeRun("flagsCarousel", function () {
     setupScrollCarousel(".flags-carousel", ".flag-card", {
-      scrollLength: "320%",
+      scrollLength: "560%",
       entryOffset: 60,
       exitOffset: 100,
       trackYStart: 0,
@@ -1571,17 +1625,10 @@
   safeRun("sectionPins", function () {
     if (reduceMotion) return;
     gsap.utils.toArray(".hero, .hero-copy, .feature, .stats, .statement, .cta").forEach((section) => {
-      const holdRatio = section.matches(".hero")
-        ? 0.42
-        : section.matches(".hero-copy")
-          ? 0.32
-          : section.matches(".statement, .cta")
-            ? 0.22
-            : 0.34;
       ScrollTrigger.create({
         trigger: section,
         start: "top top",
-        end: () => "+=" + Math.round(window.innerHeight * (window.innerWidth < 900 ? holdRatio * 0.7 : holdRatio)),
+        end: () => "+=" + getPinnedDistance(section),
         pin: true,
         anticipatePin: 1,
         pinSpacing: true,
@@ -1627,7 +1674,7 @@
       const bodyVariant = ["smoke", "collide", "flip", "bounce", "zoom"][index % 5];
       const eyebrowVariant = ["flip", "collide", "bounce", "smoke", "zoom"][index % 5];
 
-      charReveal(title, { variant: titleVariant });
+      charReveal(title, { variant: titleVariant, holdUntilEnd: true });
       if (body) revealAndFade(body, { variant: bodyVariant, y: 42 });
       if (list) revealAndFade(list, { variant: bodyVariant, y: 34, stagger: 0.03 });
       if (eyebrow) revealAndFade(eyebrow, { variant: eyebrowVariant, y: 26 });
@@ -1641,6 +1688,9 @@
      up and it counts back down, since it's just reading progress.
      --------------------------------------------------------- */
   safeRun("stats", function () {
+    const statsSection = document.querySelector(".stats");
+    const countDistance = statsSection ? Math.round(getPinnedDistance(statsSection) * 0.72) : Math.round(window.innerHeight * 1.1);
+
     document.querySelectorAll(".stat__num").forEach((el) => {
       const target = parseFloat(el.dataset.value);
       const suffix = el.dataset.suffix || "";
@@ -1663,10 +1713,11 @@
         ease: "none",
         onUpdate: render,
         scrollTrigger: {
-          trigger: el,
-          start: "top 92%",
-          end: "top 45%",
+          trigger: statsSection || el,
+          start: "top top",
+          end: () => "+=" + countDistance,
           scrub: true,
+          invalidateOnRefresh: true
         },
       });
     });
@@ -1695,8 +1746,8 @@
         stagger: 0.5,
         scrollTrigger: {
           trigger: el,
-          start: "top 75%",
-          end: "bottom 40%",
+          start: "top top",
+          end: "+=123%",
           scrub: true,
         },
       });
@@ -1724,8 +1775,8 @@
           ease: "power2.out",
           scrollTrigger: {
             trigger: ".cta",
-            start: `top ${80 - i * 12}%`,
-            end: `top ${30 - i * 12}%`,
+            start: "top top",
+            end: "+=78%",
             scrub: true,
           },
         }
@@ -1739,8 +1790,8 @@
         ease: "power1.in",
         scrollTrigger: {
           trigger: ".cta",
-          start: `top ${10 - i * 8}%`,
-          end: `top ${-35 - i * 8}%`,
+          start: "top top+=90%",
+          end: "top top+=150%",
           scrub: true,
         },
       });
