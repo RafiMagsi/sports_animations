@@ -306,8 +306,18 @@
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
   }
+  function easeInOutSine(t) {
+    const clamped = clamp01(t);
+    return -(Math.cos(Math.PI * clamped) - 1) / 2;
+  }
   function clamp01(v) {
     return Math.min(1, Math.max(0, v));
+  }
+  function remapProgress(progress, start, end, easeFn) {
+    if (progress <= start) return 0;
+    if (progress >= end) return 1;
+    const local = (progress - start) / (end - start);
+    return typeof easeFn === "function" ? easeFn(local) : local;
   }
   function makeIncomingParticle() {
     return {
@@ -489,7 +499,7 @@
       const dt = Math.min(0.5, (time - lastTime) / 1000);
       lastTime = time;
 
-      idleRotation += dt * 0.42; // faster idle spin
+      idleRotation += dt * 0.24;
       group.rotation.y = idleRotation;
       group.rotation.x = Math.sin(time * 0.00018) * 0.05;
       group.updateMatrixWorld();
@@ -541,18 +551,18 @@
     // snapping to "gathered" and staying there. Matches the same
     // gather/hold/leave shape the vignette fade already uses.
     function galaxyEnvelope(p) {
-      const gatherEnd = 0.35;
-      const holdEnd = 0.65;
-      if (p <= gatherEnd) return p / gatherEnd;
+      const gatherEnd = 0.44;
+      const holdEnd = 0.56;
+      if (p <= gatherEnd) return easeInOutSine(p / gatherEnd);
       if (p <= holdEnd) return 1;
-      return 1 - (p - holdEnd) / (1 - holdEnd);
+      return 1 - easeInOutSine((p - holdEnd) / (1 - holdEnd));
     }
 
     if (!reduceMotion) {
       ScrollTrigger.create({
         trigger: section,
         start: "top top",
-        end: "+=130%",
+        end: "+=118%",
         pin: true,
         anticipatePin: 1,
         scrub: 1,
@@ -900,7 +910,7 @@
 
       // the swirl never stops — idle rotation runs every frame
       // regardless of scroll position, gathered or not
-      idleRotation += dt * 0.26; // faster idle spin — covers both the galaxy and football-shape phases
+      idleRotation += dt * 0.16;
       group.rotation.y = idleRotation;
       group.updateMatrixWorld();
 
@@ -980,25 +990,25 @@
     requestAnimationFrame(tick);
 
     if (!reduceMotion) {
-      const GATHER_END = 0.22;
-      const COLOR_START = 0.42, COLOR_END = 0.6;
-      const FORM_START = 0.55, FORM_END = 0.74;
+      const GATHER_END = 0.3;
+      const COLOR_START = 0.34, COLOR_END = 0.68;
+      const FORM_START = 0.54, FORM_END = 0.82;
       const DISAPPEAR_START = INTRO_VIDEO_START_FRAC, DISAPPEAR_END = 1;
 
       introScrollTriggerRef = ScrollTrigger.create({
         trigger: section,
         start: "top top",
-        end: "+=220%",
+        end: "+=250%",
         pin: true,
         anticipatePin: 1,
         scrub: 1,
         onUpdate: (self) => {
           const p = self.progress;
           scrollPhase = p;
-          gatherProgress = clamp01(p / GATHER_END);
-          colorProgress = clamp01((p - COLOR_START) / (COLOR_END - COLOR_START));
-          formProgress = clamp01((p - FORM_START) / (FORM_END - FORM_START));
-          disappearProgress = clamp01((p - DISAPPEAR_START) / (DISAPPEAR_END - DISAPPEAR_START));
+          gatherProgress = remapProgress(p, 0, GATHER_END, easeInOutSine);
+          colorProgress = remapProgress(p, COLOR_START, COLOR_END, easeInOutSine);
+          formProgress = remapProgress(p, FORM_START, FORM_END, easeInOutSine);
+          disappearProgress = remapProgress(p, DISAPPEAR_START, DISAPPEAR_END, easeInOutSine);
         },
       });
     }

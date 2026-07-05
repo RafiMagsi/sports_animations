@@ -744,7 +744,7 @@
      INTRO_VIDEO_START_FRAC (0.84 — MUST match the same constant in
      effects.js) the football glitters start dispersing AND the whole
      cover dissolves away at once, revealing the real video background
-     right as it starts scrolling. Pin range ("+=220%") also must match
+     right as it starts scrolling. Pin range ("+=250%") also must match
      effects.js's setupIntro.
      --------------------------------------------------------- */
   safeRun("introCover", function () {
@@ -763,7 +763,7 @@
         scrollTrigger: {
           trigger: ".intro",
           start: "top top",
-        end: "+=330%",
+          end: "+=250%",
           scrub: true,
         },
       })
