@@ -1131,13 +1131,15 @@
     stage.add(ballRig);
     stage.add(haloRig);
 
-    const ambient = new THREE.AmbientLight(0x9ab8ff, 1.15);
-    const hemi = new THREE.HemisphereLight(0xaee8ff, 0x0b1020, 1.2);
-    const key = new THREE.DirectionalLight(0xffffff, 2.2);
-    key.position.set(10, 14, 18);
-    const rim = new THREE.DirectionalLight(0xe879f9, 1.5);
-    rim.position.set(-14, -6, 10);
-    scene.add(ambient, hemi, key, rim);
+    const ambient = new THREE.AmbientLight(0xcddcff, 1.3);
+    const hemi = new THREE.HemisphereLight(0xdff6ff, 0x09111f, 1.42);
+    const key = new THREE.DirectionalLight(0xffffff, 3.1);
+    key.position.set(12, 16, 22);
+    const fill = new THREE.DirectionalLight(0x8ad8ff, 1.05);
+    fill.position.set(-16, 5, 16);
+    const rim = new THREE.DirectionalLight(0xf09dff, 1.28);
+    rim.position.set(-18, -7, 12);
+    scene.add(ambient, hemi, key, fill, rim);
 
     function makeGlowTexture() {
       const s = 128;
@@ -1265,12 +1267,12 @@
       }
 
       const rows = [
-        { y: 0.14, count: 5, offset: 0.0, radius: 0.058 },
-        { y: 0.28, count: 6, offset: 0.06, radius: 0.068 },
-        { y: 0.42, count: 7, offset: 0.02, radius: 0.076 },
-        { y: 0.58, count: 7, offset: 0.09, radius: 0.076 },
-        { y: 0.72, count: 6, offset: 0.04, radius: 0.068 },
-        { y: 0.86, count: 5, offset: 0.0, radius: 0.058 }
+        { y: 0.12, count: 5, offset: 0.0, radius: 0.064 },
+        { y: 0.28, count: 7, offset: 0.03, radius: 0.064 },
+        { y: 0.44, count: 8, offset: 0.0, radius: 0.064 },
+        { y: 0.60, count: 8, offset: 0.06, radius: 0.064 },
+        { y: 0.76, count: 7, offset: 0.03, radius: 0.064 },
+        { y: 0.90, count: 5, offset: 0.0, radius: 0.064 }
       ];
 
       rows.forEach((row, rowIndex) => {
@@ -1279,7 +1281,7 @@
           const cx = ((xFrac % 1) + 1) % 1 * size;
           const cy = row.y * size;
           const radius = row.radius * size;
-          const isDark = (rowIndex * 2 + i) % 4 === 0;
+          const isDark = (rowIndex + i) % 3 === 0;
           const sides = isDark ? 5 : 6;
           const rotation = isDark ? -Math.PI / 2 : Math.PI / 6;
           drawPanel(
@@ -1288,24 +1290,20 @@
             radius,
             sides,
             rotation,
-            isDark ? "#1a1e27" : "#f3f5f8",
-            isDark ? "rgba(236,240,247,0.92)" : "rgba(72,78,94,0.44)",
+            isDark ? "#171d28" : "#f7f9fc",
+            isDark ? "rgba(236,240,247,0.95)" : "rgba(86,92,110,0.42)",
             isDark ? "dark" : "light"
           );
         }
       });
 
-      ctx.save();
-      ctx.globalAlpha = 0.12;
-      for (let i = 0; i < 26; i++) {
-        const arcR = size * (0.14 + i * 0.03);
-        ctx.strokeStyle = i % 2 === 0 ? "rgba(255,255,255,0.06)" : "rgba(123,136,164,0.05)";
-        ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        ctx.arc(size * 0.34, size * 0.28, arcR, -0.42, 0.78);
-        ctx.stroke();
-      }
-      ctx.restore();
+      const gloss = ctx.createRadialGradient(size * 0.28, size * 0.22, size * 0.04, size * 0.46, size * 0.48, size * 0.82);
+      gloss.addColorStop(0, "rgba(255,255,255,0.28)");
+      gloss.addColorStop(0.22, "rgba(255,255,255,0.14)");
+      gloss.addColorStop(0.58, "rgba(255,255,255,0)");
+      gloss.addColorStop(1, "rgba(12,18,30,0.1)");
+      ctx.fillStyle = gloss;
+      ctx.fillRect(0, 0, size, size);
 
       bctx.save();
       bctx.globalAlpha = 0.24;
@@ -1352,32 +1350,32 @@
     const footballTextures = makeFootballTextures();
 
     const ball = new THREE.Mesh(
-      new THREE.SphereGeometry(8.2, isSmall ? 34 : 54, isSmall ? 34 : 54),
+      new THREE.SphereGeometry(8.35, isSmall ? 64 : 92, isSmall ? 64 : 92),
       new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
         map: footballTextures.colorTexture,
         bumpMap: footballTextures.bumpTexture,
         roughnessMap: footballTextures.roughTexture,
-        bumpScale: 0.42,
-        roughness: 0.74,
+        bumpScale: 0.22,
+        roughness: 0.56,
         metalness: 0.02,
         clearcoat: 1,
-        clearcoatRoughness: 0.42,
-        transmission: 0.02,
-        thickness: 1.1,
-        emissive: new THREE.Color("#0f1220"),
-        emissiveIntensity: 0.05,
+        clearcoatRoughness: 0.18,
+        transmission: 0,
+        thickness: 0.4,
+        emissive: new THREE.Color("#0b1020"),
+        emissiveIntensity: 0.02,
       })
     );
     ballRig.add(ball);
 
     const shell = new THREE.Mesh(
-      new THREE.SphereGeometry(8.75, isSmall ? 24 : 32, isSmall ? 24 : 32),
+      new THREE.SphereGeometry(8.72, isSmall ? 28 : 36, isSmall ? 28 : 36),
       new THREE.MeshStandardMaterial({
         color: 0xa78bfa,
         wireframe: true,
         transparent: true,
-        opacity: 0.16
+        opacity: 0.05
       })
     );
     ballRig.add(shell);
@@ -1538,34 +1536,35 @@
       const envelope = heroStageEnvelope(scrollProgress);
       const idle = time * 0.00055;
 
-      let posX = 0;
+      const heroBallX = 9.2;
+      let posX = heroBallX;
       let posY = 0;
       let posZ = 0;
       let scale = 1;
       let opacity = 1;
 
       if (envelope.phase === "enter") {
-        posX = 20 * (1 - envelope.t);
+        posX = heroBallX + 16 * (1 - envelope.t);
         posY = -7 * (1 - envelope.t);
         posZ = -12 * (1 - envelope.t);
         scale = 0.54 + envelope.t * 0.46;
         opacity = 0.1 + envelope.t * 0.9;
       } else if (envelope.phase === "hold") {
-        posX = Math.sin(envelope.t * Math.PI * 2) * 1.8;
+        posX = heroBallX + Math.sin(envelope.t * Math.PI * 2) * 1.35;
         posY = Math.cos(envelope.t * Math.PI * 1.6) * 1.2;
         posZ = 0;
         scale = 1 + Math.sin(envelope.t * Math.PI) * 0.04;
         opacity = 1;
       } else {
         const eased = gsap.parseEase("power2.inOut")(clamp01(envelope.t));
-        posX = -7 * eased;
+        posX = heroBallX - 3.4 * eased;
         posY = 3 * eased;
         posZ = 6 * eased;
         scale = 1 - eased * 0.1;
         opacity = 1 - eased * 0.28;
       }
 
-      stage.position.x = posX + mouseX * 2.2;
+      stage.position.x = posX + mouseX * 1.4;
       stage.position.y = posY - mouseY * 1.8;
       stage.position.z = posZ;
       stage.scale.setScalar(scale);
@@ -1598,8 +1597,8 @@
       orbitB.material.opacity = 0.24 + opacity * 0.32;
       orbitC.material.opacity = 0.12 + opacity * 0.2;
 
-      camera.position.z = 58 - scrollProgress * 9;
-      camera.lookAt(0, 0, 0);
+      camera.position.z = 56 - scrollProgress * 7;
+      camera.lookAt(heroBallX * 0.34, 0, 0);
 
       renderer.render(scene, camera);
       requestAnimationFrame(tick);

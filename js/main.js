@@ -767,31 +767,29 @@
       scrollTrigger: {
         trigger: ".hero",
         start: "top top",
-        end: "+=42%",
+        end: "+=58%",
         scrub: true,
         invalidateOnRefresh: true,
         onLeave: () => {
-          if (orbitals.length) gsap.set(orbitals, { opacity: 0 });
-          if (stage) gsap.set(stage, { opacity: 0 });
+          if (orbitals.length) gsap.set(orbitals, { opacity: 0.2 });
+          if (stage) gsap.set(stage, { opacity: 0.78 });
           if (flash) gsap.set(flash, { opacity: 0 });
         },
         onLeaveBack: () => {
           if (orbitals.length) gsap.set(orbitals, { opacity: 0 });
-          if (stage) gsap.set(stage, { opacity: 0.96 });
-          if (flash) gsap.set(flash, { opacity: 1 });
+          if (stage) gsap.set(stage, { opacity: 1 });
+          if (flash) gsap.set(flash, { opacity: 0 });
         }
       },
     });
-    tl.to(orbitals, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", ease: "power2.out", duration: 0.14, stagger: 0.03 }, 0.08)
-      .to(orbitals, { opacity: 0, y: -16, scale: 0.9, filter: "blur(10px)", ease: "power2.in", duration: 0.16, stagger: 0.02 }, 0.26);
+    tl.to(orbitals, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", ease: "power2.out", duration: 0.18, stagger: 0.04 }, 0.08)
+      .to(orbitals, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.44 }, 0.26)
+      .to(orbitals, { opacity: 0.32, y: -8, scale: 0.94, filter: "blur(4px)", ease: "power2.inOut", duration: 0.18, stagger: 0.02 }, 0.78);
 
     if (stage) {
-      tl.to(stage, { opacity: 0.16, ease: "power1.out", duration: 0.12 }, 0.22)
-        .to(stage, { opacity: 0, ease: "power2.in", duration: 0.18 }, 0.3);
-    }
-
-    if (flash) {
-      tl.to(flash, { opacity: 0, ease: "power1.in", duration: 0.12 }, 0.32);
+      tl.to(stage, { opacity: 1, ease: "power1.out", duration: 0.18 }, 0.12)
+        .to(stage, { opacity: 1, duration: 0.52 }, 0.3)
+        .to(stage, { opacity: 0.82, ease: "power2.inOut", duration: 0.18 }, 0.84);
     }
   }
 
@@ -836,74 +834,70 @@
      --------------------------------------------------------- */
   function runHeroFlash() {
     const lines = gsap.utils.toArray(".hero__flash-line");
+    const flash = document.querySelector(".hero__flash");
     if (!lines.length) return;
-    gsap.set(lines, { opacity: 0, scale: 0.75, filter: "blur(16px)" });
-    if (reduceMotion) return;
-
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: ".hero",
-        start: "top bottom",
-        end: "top top",
-        scrub: true,
-        // HARD KILL-SWITCH: whatever the per-line scrub tweens are doing,
-        // the instant this window is exited (either direction) every
-        // flash line is forced to opacity:0. Without this, a stale
-        // ScrollTrigger measurement (section heights can shift after
-        // fonts/video load) could leave this timeline's progress from
-        // ever quite reaching 1, letting a line like "Compete with
-        // confidence." stay visible long after scrolling into a much
-        // later section — exactly the cross-section overlap reported.
-        onLeave: () => gsap.set(".hero__flash", { opacity: 0 }),
-        onLeaveBack: () => gsap.set(".hero__flash", { opacity: 0 }),
-        onEnter: () => gsap.set(".hero__flash", { opacity: 1 }),
-        onEnterBack: () => gsap.set(".hero__flash", { opacity: 1 }),
-      },
+    gsap.set(lines, {
+      "--picker-offset": "0px",
+      "--picker-scale": 0.82,
+      "--picker-tilt": "0deg",
+      "--picker-opacity": 0,
+      "--picker-blur": "14px",
+      "--picker-focus": 0
     });
-    const step = 1 / lines.length;
-    lines.forEach((line, i) => {
-      const t0 = i * step;
-      const variant = HERO_FLASH_VARIANTS[i % HERO_FLASH_VARIANTS.length];
-      let fromVars;
-      let holdVars;
-      let exitVars;
-      let enterEase = "power2.out";
-      let leaveEase = "power2.in";
+    if (flash) gsap.set(flash, { opacity: 0, x: 22, filter: "blur(12px)" });
 
-      if (variant === "flip") {
-        gsap.set(line, { transformPerspective: 1200, transformOrigin: "50% 50%" });
-        fromVars = { opacity: 0, rotateY: i % 2 === 0 ? -88 : 88, rotateX: -12, scale: 0.82, filter: "blur(16px)" };
-        holdVars = { opacity: 1, rotateY: 0, rotateX: 0, scale: 1, filter: "blur(0px)" };
-        exitVars = { opacity: 0, rotateY: i % 2 === 0 ? 68 : -68, rotateX: 8, scale: 1.08, filter: "blur(12px)" };
-      } else if (variant === "collide") {
-        gsap.set(line, { transformPerspective: 1200, transformOrigin: i % 2 === 0 ? "50% 50%" : "50% 50%" });
-        fromVars = { opacity: 0, x: i % 2 === 0 ? 240 : -240, scaleX: 1.18, scaleY: 0.84, rotateZ: i % 2 === 0 ? -4 : 4, filter: "blur(16px)" };
-        holdVars = { opacity: 1, x: 0, scaleX: 1, scaleY: 1, rotateZ: 0, filter: "blur(0px)" };
-        exitVars = { opacity: 0, x: i % 2 === 0 ? -180 : 180, scaleX: 0.96, scaleY: 1.06, rotateZ: i % 2 === 0 ? 3 : -3, filter: "blur(12px)" };
-        enterEase = "power4.out";
-      } else if (variant === "bounce") {
-        gsap.set(line, { transformPerspective: 1200, transformOrigin: "50% 100%" });
-        fromVars = { opacity: 0, y: 120, scaleY: 1.3, scaleX: 0.82, filter: "blur(16px)" };
-        holdVars = { opacity: 1, y: 0, scaleY: 1, scaleX: 1, filter: "blur(0px)" };
-        exitVars = { opacity: 0, y: -72, scaleY: 0.9, scaleX: 1.08, filter: "blur(12px)" };
-        enterEase = "back.out(1.6)";
-      } else if (variant === "smoke") {
-        gsap.set(line, { transformPerspective: 1200, transformOrigin: "50% 50%" });
-        fromVars = { opacity: 0, y: 32, skewX: i % 2 === 0 ? -8 : 8, scale: 0.94, filter: "blur(30px)" };
-        holdVars = { opacity: 1, y: 0, skewX: 0, scale: 1, filter: "blur(0px)" };
-        exitVars = { opacity: 0, y: -38, skewX: i % 2 === 0 ? 9 : -9, scale: 1.1, filter: "blur(24px)" };
-        leaveEase = "power1.in";
-      } else {
-        gsap.set(line, { transformPerspective: 1200, transformOrigin: "50% 50%" });
-        fromVars = { opacity: 0, z: -260, scale: 0.56, filter: "blur(18px)" };
-        holdVars = { opacity: 1, z: 0, scale: 1, filter: "blur(0px)" };
-        exitVars = { opacity: 0, z: 180, scale: 1.14, filter: "blur(12px)" };
+    function renderPicker(progress) {
+      const fadeIn = gsap.utils.clamp(0, 1, (progress - 0.14) / 0.12);
+      const fadeOut = 1 - gsap.utils.clamp(0, 1, (progress - 0.86) / 0.1);
+      const visibility = fadeIn * fadeOut;
+      const pickerProgress = gsap.utils.clamp(0, 0.999, (progress - 0.2) / 0.58);
+      const active = pickerProgress * (lines.length - 1);
+
+      if (flash) {
+        gsap.set(flash, {
+          opacity: visibility,
+          x: (1 - visibility) * 22,
+          filter: "blur(" + ((1 - visibility) * 12).toFixed(2) + "px)"
+        });
       }
 
-      gsap.set(line, fromVars);
-      tl.to(line, { ...holdVars, duration: step * 0.4, ease: enterEase }, t0)
-        .to(line, { ...holdVars, duration: step * 0.25 }, t0 + step * 0.4)
-        .to(line, { ...exitVars, duration: step * 0.35, ease: leaveEase }, t0 + step * 0.65);
+      lines.forEach((line, index) => {
+        const delta = index - active;
+        const abs = Math.abs(delta);
+        const focus = Math.max(0, 1 - abs);
+        const opacity = Math.max(0.08, 1 - abs * 0.34) * visibility;
+        const offset = delta * 76;
+        const scale = 0.76 + focus * 0.34;
+        const tilt = gsap.utils.clamp(-32, 32, delta * -14);
+        const blur = Math.min(16, abs * 5.4);
+        gsap.set(line, {
+          "--picker-offset": offset.toFixed(2) + "px",
+          "--picker-scale": scale.toFixed(3),
+          "--picker-tilt": tilt.toFixed(2) + "deg",
+          "--picker-opacity": opacity.toFixed(3),
+          "--picker-blur": blur.toFixed(2) + "px",
+          "--picker-focus": focus.toFixed(3),
+          zIndex: String(100 - Math.round(abs * 10))
+        });
+      });
+    }
+
+    if (reduceMotion) {
+      renderPicker(0.56);
+      if (flash) gsap.set(flash, { opacity: 1, x: 0, filter: "blur(0px)" });
+      return;
+    }
+
+    ScrollTrigger.create({
+      trigger: ".hero",
+      start: "top bottom",
+      end: "top top",
+      scrub: true,
+      onLeave: () => flash && gsap.set(flash, { opacity: 0 }),
+      onLeaveBack: () => flash && gsap.set(flash, { opacity: 0 }),
+      onEnter: () => renderPicker(0.18),
+      onEnterBack: () => renderPicker(0.18),
+      onUpdate: (self) => renderPicker(self.progress)
     });
   }
 
@@ -1192,10 +1186,10 @@
     const hero = document.querySelector(".hero");
     if (heroOrbitals.length && hero && !reduceMotion) {
       const clusterOffsets = [
-        { x: -210, y: 68, scale: 0.98, rotate: -7 },
-        { x: -94, y: -56, scale: 0.94, rotate: -4 },
-        { x: 82, y: -76, scale: 0.92, rotate: 3 },
-        { x: 206, y: 46, scale: 1, rotate: 7 }
+        { x: -206, y: 34, scale: 0.98, rotate: -8 },
+        { x: -112, y: -126, scale: 0.94, rotate: -5 },
+        { x: 28, y: -122, scale: 0.93, rotate: 4 },
+        { x: -42, y: 146, scale: 1, rotate: 7 }
       ];
 
       function setOrbitalVars(node, values) {
@@ -1213,8 +1207,8 @@
         const rect = node.getBoundingClientRect();
         const nodeCenterX = rect.left - heroRect.left + rect.width / 2;
         const nodeCenterY = rect.top - heroRect.top + rect.height / 2;
-        const targetCenterX = heroRect.width / 2 + target.x;
-        const targetCenterY = heroRect.height * 0.5 + target.y;
+        const targetCenterX = heroRect.width * 0.62 + target.x;
+        const targetCenterY = heroRect.height * 0.52 + target.y;
         return {
           x: targetCenterX - nodeCenterX,
           y: targetCenterY - nodeCenterY
