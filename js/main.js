@@ -770,10 +770,10 @@
         // the hint disappears the moment scrolling actually starts
         .to(introHint, { opacity: 0, duration: 0.04, ease: "power2.out" }, 0)
         // ZEN FOOTBALL reveals right as the galaxy finishes gathering
-        .to(introWord, { opacity: 1, y: 0, duration: 0.06, ease: "power2.out" }, 0.16)
-        .to(introWord, { opacity: 1, y: 0, duration: 0.08 }, 0.22) // hold, fully readable
+        .to(introWord, { opacity: 1, y: 120, duration: 0.06, ease: "power2.out" }, 0.16)
+        .to(introWord, { opacity: 1, y: 120, duration: 0.08 }, 0.22) // hold, fully readable
         // clears the stage well before the color-shift + football morph
-        .to(introWord, { opacity: 0, y: -22, duration: 0.06, ease: "power2.in" }, 0.3)
+        .to(introWord, { opacity: 0, y: -152, duration: 0.06, ease: "power2.in" }, 0.3)
         // the whole cover dissolves away in exact sync with the
         // football glitters dispersing and the video starting to
         // scroll — one unified "handoff" beat, not three separate ones

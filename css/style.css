@@ -762,7 +762,7 @@ body.cursor-hover .cursor-ring{
 .intro__word{
   position: relative;
   z-index: 2;
-  font-size: clamp(34px, 8.4vw, 104px); /* sized for a two-word wordmark instead of one short word */
+  font-size: clamp(34px, 8.4vw, 184px); /* sized for a two-word wordmark instead of one short word */
   letter-spacing: 0.01em;
   color: var(--ink);
   text-shadow: var(--text-shadow);
@@ -770,7 +770,8 @@ body.cursor-hover .cursor-ring{
   pointer-events: none;
   text-align: center;
   max-width: 92vw;
-  margin: 0 auto;
+  margin: 1000 auto;
+  transform: translateY(clamp(260px, 100vh, 260px));
 }
 .intro__word span{
   background: var(--holo-gradient);
